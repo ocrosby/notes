@@ -13,7 +13,13 @@ Adding a local repo to GitHub with the GitHub CLI
 
 If you want your project to belong to an organization instead of your user account specify the organization name and project name 
 
-> gh repo create jedi-knights/project-name
+> gh repo create --source=. --public --remote=jedi-knigths/project-name --push
+
+> gh repo create --source=. --private --remote=jedi-knights/project-name --push
+
+> gh repo create --source=. --internal --remote=jedi-knights/project-name --push
+
+Note: this should be added to scaffit so that it automates the creation process even further
 
 ## References
 
