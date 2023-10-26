@@ -24,3 +24,8 @@ docker run ubuntu:latest
 whereas this one starts an interactive terminal
 > docker run -it ubuntu /bin/bash
 
+Prune dangling Docker images
+
+```sh
+docker image prune -a -f
+```
