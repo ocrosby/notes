@@ -1,6 +1,13 @@
 # Creating a GitHub repo from the terminal
 
-This guide will walk you through the process of creating a new GitHub repository directly from your terminal using the GitHub CLI (gh).
+## Overview
+
+To start development of new projects we routinely need to create new repositories.  
+When working with developers who are new to GitHub it can be helpful to show them how 
+to create a new repository from the terminal to speed up their process.
+
+This guide will walk you through the process of creating a new GitHub repository directly 
+from your terminal using the GitHub CLI (gh).
 
 ## Prerequisites
 
