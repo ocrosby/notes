@@ -73,7 +73,19 @@ gh repo create --source=. --public --remote=<github-username>/react-seed --push
 git remote add origin https://github.com/<github-username>/react-seed.git
 ```
 
-In this example you would need to replace <github-username> with your GitHub username.
+Note: create-react-app initializes a git repo for you, so you will have a .git directory available in the 
+react-seed directory.
+
+In this example you would need to replace github-username with your GitHub username (removing the brackets).
+
+So if your GitHub username is jdoe for example it would look like this:
+
+```bash
+npx create-react-app react-seed
+cd react-seed
+gh repo create --source=. --public --remote=jdoe/react-seed --push
+git remote add origin https://github.com/jdoe/react-seed.git
+```
 
 ## References 
 
