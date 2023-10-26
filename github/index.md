@@ -7,7 +7,13 @@ This document contains my personal notes on GitHub.
 GitHub is a web-based hosting service for version control using Git.  It is mostly used for computer code.  It offers all of the distributed version control and source code management (SCM) functionality of Git as well as adding its own features.  It provides access control and several collaboration features such as bug tracking, feature requests, task management, and wikis for every project.
 
 
-Adding a local repo to GitHub with the GitHub CLI
+### Adding a local repo to GitHub with the GitHub CLI
+
+You may need to login to your GitHub account using the gitHub CLI if you haven't already
+
+```bash
+gh auth login
+```
 
 > gh repo create project-name
 
