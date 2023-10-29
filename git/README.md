@@ -67,3 +67,14 @@ Will show that the file is not resolved.
 > git status
 
 should be happy
+
+## Removing Something from Version Control Without Deleting It
+
+From time to time I will accidentally commit something like my .idea directory that I don't want in my repo.  In order to remove it from verison control without deleteing the file simply do the following.
+
+```bash
+git rm -r --cached .idea
+git commit -m "untrack .idea directory"
+git push
+```
+
