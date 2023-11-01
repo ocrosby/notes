@@ -15,6 +15,26 @@ Time Complexity:
 
 An algorithm is said to have constant time complexity if its runtime does not depend on the input size. It means the algorithm takes a fixed amount of time to complete, regardless of how large the input is.
 
+```PPython
+def access_element(arr, index):
+    """
+    Access an element in a list by index.
+    This operation is O(1) as it takes constant time.
+    """
+    if index < 0 or index >= len(arr):
+        return None  # Index out of bounds
+    return arr[index]
+
+my_list = [10, 20, 30, 40, 50]
+
+# Accessing elements by index (O(1))
+element1 = access_element(my_list, 2)  # Accesses the third element (30)
+element2 = access_element(my_list, 0)  # Accesses the first element (10)
+
+print(element1)  # Output: 30
+print(element2)  # Output: 10
+```
+
 ### O(log n) - Logarithmic Time
 
 Algorithms with logarithmic time complexity have runtimes that grow slowly as the input size increases. Common examples include binary search and many efficient tree-based data structures and algorithms.
