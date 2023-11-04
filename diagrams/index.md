@@ -1,5 +1,22 @@
 # Diagrams
 
+## Tools
+
+- Mermaid
+- PlantUML
+- HackerDraw
+
+
+What is important to me?
+
+- Easy to use
+- Easy to read
+- Easy to maintain
+- Must integrate easily with Markdown on GitHub
+- Must be able to generate diagrams from code
+
+
+
 Diagrams is a python package that allow you to create diagrams as code.
 
 It was inspired by the original [diagrams](
