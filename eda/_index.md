@@ -176,6 +176,14 @@ Note: Take a look at Apache Kafka for a good example of an event streaming.
 
 You will likely want to utilize Kafka's docker image to set up examples locally.
 
+
+The defining characteristic of a `message queue` is its lack of event retention.  All events put into a message queue 
+have a limited lifetime.  After the events have been consumed or have expired, they are discarded. 
+
+A message queue is useful for simple publisher/subscriber (pub/sub) scenarios when the subscribers are actively 
+running or can retrieve the events quickly enough.
+
+
 ### Event Stores
 
 As the name implies, an event store is an append-only repository for events.
