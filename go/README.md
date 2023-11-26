@@ -11,6 +11,12 @@ To print if variables escape to the heap
 go build -gcflags="-m -l"
 ```
 
+Compiler Flags
+
+- go help build
+- go tool compile -h
+- go build -gcflags "-m=2"
+
 ## References
 
 - [Stack or Heap](https://golang.org/doc/faq#stack_or_heap)
