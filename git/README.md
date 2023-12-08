@@ -1,7 +1,12 @@
 # Git
 
-Show which branches are available
+Checkout a repository
 
+> git clone https://github.com/yourname/yourrepo.git
+
+This would checkout yourrepo into a directory called yourrepo in the current directory.
+
+Show which branches are available
 
 > git branch
 
@@ -11,16 +16,13 @@ Creating a new branch
 Switching to a new branch
 > git checkout feature/new-branch
 
-
 Checkout/Create a new local branch
 > git checkout -b experimental-branch
 
 
-Stage a file
+Stage a file (get ready to commit)
 > git add readme.txt
 
-
-show
 
 Display the status
 > git status
