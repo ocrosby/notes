@@ -4,6 +4,15 @@
 
 This document contains my personal notes on creating a new React application.
 
+Installing nvm
+
+If you haven't already installed it you can install nvm using homebrew as follows:
+
+```sh
+brew install nvm
+```
+
+
 Installing version 20.8.0 of node:
 
 ```sh

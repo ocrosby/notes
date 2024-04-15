@@ -1,5 +1,39 @@
 # PostgreSQL
 
+Installing on MacOS
+
+> brew install postgresql
+
+Starting the Postgres Service
+
+> brew services start postgresql
+
+Stopping the Postgres Service
+
+> brew services stop postgresql
+
+Configure the Postgres Database Server
+
+> psql postgres
+
+Create a new user with privileges to create and manage databases within the service:
+
+```sh
+postgres=# CREATE ROLE newUser WITH LOGIN PASSWORD 'password';
+postgres=# ALTER ROLE newUser CREATEDB;
+```
+
+Once the new user is created, you can also start using the credentials to log in with the new user's credentials.
+
+Exit the current session
+> \q
+
+Login with the new user's credentials
+
+> psql postgres -U newUser
+
+
+
 A PostgreSQL instance is called a cluster because a single instance can serve and handle multiple databases.  Every
 database is an isolated space where users and applications can store data.
 
