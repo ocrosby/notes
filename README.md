@@ -7,7 +7,7 @@
 
 ## Languages
 
-* [Go](./lang/go/README.md)
+* [Go](go/index.md)
 * [Javascript](./lang/javascript/README.md)
 * [Python](./lang/python/README.md)
 * [Markdown](./markdown/README.md)

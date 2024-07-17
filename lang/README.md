@@ -1,5 +1,5 @@
 # Languages
 
 * [Javascript](./javascript/README.md)
-* [Go](./go/README.md)
+* [Go](../go/index.md)
 * [Python](./python/README.md)
