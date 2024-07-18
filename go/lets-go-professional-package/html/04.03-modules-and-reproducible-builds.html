@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>Modules and reproducible builds &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="04.00-database-driven-responses.html">Database-driven responses</a> &rsaquo; Modules and reproducible builds</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="04.02-installing-a-database-driver.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="04.04-creating-a-database-connection-pool.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 4.3.</div>
+			<h2 id="modules-and-reproducible-builds">Modules and reproducible builds</h2>
+
+<p>Now that the MySQL driver is installed, let&rsquo;s take a look at the <code>go.mod</code> file (which we created right at the start of the book). You should see a <code>require</code> block with two lines containing the path and exact version number of the packages that you downloaded:</p>
+
+<figure class="code plain">
+<figcaption>File: go.mod</figcaption>
+<pre>module snippetbox.alexedwards.net
+
+go 1.22.0
+
+require (
+    filippo.io/edwards25519 v1.1.0 // indirect
+    github.com/go-sql-driver/mysql v1.8.0 // indirect
+)</pre>
+</figure>
+
+<p>These lines in <code>go.mod</code> essentially tell the Go command exactly which version of a package should be used when you run a command like <code>go run</code>, <code>go test</code> or <code>go build</code> from your project directory.</p>
+
+<p>This makes it easy to have multiple projects on the same machine where <em>different versions of the same package</em> are used. For example, this project is using <code>v1.8.0</code> of the MySQL driver, but you could have another codebase on your computer which uses <code>v1.5.0</code> and that would be A-OK.</p>
+
+<aside class="note"><p>
+<strong>Note:</strong> The <code>// indirect</code> annotation indicates that a package doesn&rsquo;t directly appear in any <code>import</code> statement in your codebase. Right now, we still haven&rsquo;t written any code that actually uses either the <code>github.com/go-sql-driver/mysql</code> or <code>filippo.io/edwards25519</code> packages, which is why they are both marked as indirect dependencies. We&rsquo;ll fix that in the next chapter.
+</p></aside>
+
+<p>You&rsquo;ll also see that a new file has been created in the root of your project directory called <code>go.sum</code>.</p>
+
+<figure class="img">
+<img src="assets/img/04.03-01.png" alt="04.03-01.png" />
+</figure>
+
+<p>This <code>go.sum</code> file contains the cryptographic checksums representing the content of the required packages. If you open it up you should see something like this:</p>
+
+<figure class="code plain">
+<figcaption>File: go.sum</figcaption>
+<pre>filippo.io/edwards25519 v1.1.0 h1:FNf4tywRC1HmFuKW5xopWpigGjJKiJSV0Cqo0cJWDaA=
+filippo.io/edwards25519 v1.1.0/go.mod h1:BxyFTGdWcka3PhytdK4V28tE5sGfRvvvRV7EaN4VDT4=
+github.com/go-sql-driver/mysql v1.8.0 h1:UtktXaU2Nb64z/pLiGIxY4431SJ4/dR5cjMmlVHgnT4=
+github.com/go-sql-driver/mysql v1.8.0/go.mod h1:wEBSXgmK//2ZFJyE+qWnIsVGmvmEKlqwuVSjsCm7DZg=</pre>
+</figure>
+
+<p>The <code>go.sum</code> file isn&rsquo;t designed to be human-editable and generally you won&rsquo;t need to open it. But it serves two useful functions:</p>
+
+<ul>
+<li><p>If you run the <code>go mod verify</code> command from your terminal, this will verify that the checksums of the downloaded packages on your machine match the entries in <code>go.sum</code>, so you can be confident that they haven&rsquo;t been altered.</p>
+
+<figure class="code bash">
+<pre>$ go mod verify
+<samp>all modules verified</samp></pre>
+</figure>
+</li>
+
+<li><p>If someone else needs to download all the dependencies for the project &mdash; which they can do by running <code>go mod download</code> &mdash; they will get an error if there is any mismatch between the packages they are downloading and the checksums in the file.</p></li>
+</ul>
+
+<p>So, in summary:</p>
+
+<ul>
+<li>You (or someone else in the future) can run <code>go mod download</code> to download the exact versions of all the packages that your project needs.</li>
+<li>You can run <code>go mod verify</code> to ensure that nothing in those downloaded packages has been changed unexpectedly.</li>
+<li>Whenever you run <code>go run</code>, <code>go test</code> or <code>go build</code>, the exact package versions listed in <code>go.mod</code> will always be used.</li>
+</ul>
+
+<p>And those things together makes it much easier to reliably create <a href="https://en.wikipedia.org/wiki/Reproducible_builds">reproducible builds</a> of your Go applications.</p>
+
+<hr />
+
+<h3 id="additional-information">Additional information</h3>
+
+<h4 id="upgrading-packages">Upgrading packages</h4>
+
+<p>Once a package has been downloaded and added to your <code>go.mod</code> file the package and version are &lsquo;fixed&rsquo;. But there are many reasons why you might want to upgrade to use a newer version of a package in the future.</p>
+
+<p>To upgrade to latest available <em>minor or patch release</em> of a package, you can simply run <code>go get</code> with the <code>-u</code> flag like so:</p>
+
+<figure class="code bash">
+<pre>$ go get -u github.com/foo/bar</pre>
+</figure>
+
+<p>Or alternatively, if you want to upgrade to a specific version then you should run the same command but with the appropriate <code>@version</code> suffix. For example:</p>
+
+<figure class="code bash">
+<pre>$ go get -u github.com/foo/bar@v2.0.0</pre>
+</figure>
+
+<h4 id="removing-unused-packages">Removing unused packages</h4>
+
+<p>Sometimes you might <code>go get</code> a package only to realize later that you don&rsquo;t need it anymore. When this happens you&rsquo;ve got two choices.</p>
+
+<p>You could either run <code>go get</code> and postfix the package path with <code>@none</code>, like so:</p>
+
+<figure class="code bash">
+<pre>$ go get github.com/foo/bar@none</pre>
+</figure>
+
+<p>Or if you&rsquo;ve removed all references to the package in your code, you can run <code>go mod tidy</code>, which will automatically remove any unused packages from your <code>go.mod</code> and <code>go.sum</code> files.</p>
+
+<figure class="code bash">
+<pre>$ go mod tidy</pre>
+</figure>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="04.02-installing-a-database-driver.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="04.04-creating-a-database-connection-pool.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "04.02-installing-a-database-driver.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "04.04-creating-a-database-connection-pool.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

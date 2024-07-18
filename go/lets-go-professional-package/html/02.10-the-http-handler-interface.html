@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>The http.Handler interface &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="02.00-foundations.html">Foundations</a> &rsaquo; The http.Handler interface</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="02.09-serving-static-files.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="03.00-configuration-and-error-handling.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 2.10.</div>
+			<h2 id="the-http-handler-interface">The http.Handler interface</h2>
+
+<p>Before we go any further there&rsquo;s a little theory that we should cover. It&rsquo;s a bit complicated, so if you find this chapter hard-going don&rsquo;t worry. Carry on with the application build and circle back to it later once you&rsquo;re more familiar with Go.</p>
+
+<p>In the previous chapters I&rsquo;ve thrown around the term <dfn>handler</dfn> without explaining what it truly means. Strictly speaking, what we mean by handler is <em>an object which satisfies the <a href="https://pkg.go.dev/net/http/#Handler"><code>http.Handler</code></a> interface</em>:</p>
+
+<figure class="code go">
+<pre><span class="kd">type</span> <span class="nx">Handler</span> <span class="kd">interface</span> <span class="p">{</span>
+    <span class="nf">ServeHTTP</span><span class="p">(</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="o">*</span><span class="nx">Request</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>In simple terms, this basically means that to be a handler an object <em>must</em> have a <code>ServeHTTP()</code> method with the exact signature:</p>
+
+<figure class="code go">
+<pre><span class="nf">ServeHTTP</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span></pre>
+</figure>
+
+<p>So in its simplest form a handler might look something like this:</p>
+
+<figure class="code go">
+<pre><span class="kd">type</span> <span class="nx">home</span> <span class="kd">struct</span> <span class="p">{</span><span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">h</span> <span class="o">*</span><span class="nx">home</span><span class="p">)</span> <span class="nf">ServeHTTP</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&#34;This is my home page&#34;</span><span class="p">)</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>Here we have an object (in this case it&rsquo;s an empty <code>home</code> struct, but it could equally be a string or function or anything else), and we&rsquo;ve implemented a method with the signature <code>ServeHTTP(http.ResponseWriter, *http.Request)</code> on it. That&rsquo;s all we need to make a handler.</p>
+
+<p>You could then register this with a servemux using the <code>Handle</code> method like so:</p>
+
+<figure class="code go">
+<pre><span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
+<span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;/&#34;</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">home</span><span class="p">{</span><span class="p">}</span><span class="p">)</span></pre>
+</figure>
+
+<p>When this servemux receives a HTTP request for <code>&quot;/&quot;</code>, it will then call the <code>ServeHTTP()</code> method of the <code>home</code> struct &mdash; which in turn writes the HTTP response.</p>
+
+<h3 id="handler-functions">Handler functions</h3>
+
+<p>Now, creating an object just so we can implement a <code>ServeHTTP()</code> method on it is long-winded and a bit confusing. Which is why in practice it&rsquo;s far more common to write your handlers as a normal function (like we have been so far in this book). For example:</p>
+
+<figure class="code go">
+<pre><span class="kd">func</span> <span class="nf">home</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&#34;This is my home page&#34;</span><span class="p">)</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>But this <code>home</code> function is just a normal function; it doesn&rsquo;t have a <code>ServeHTTP()</code> method. So in itself it <em>isn&rsquo;t</em> a handler.</p>
+
+<p>Instead we can <em>transform</em> it into a handler using the <a href="https://pkg.go.dev/net/http/#HandlerFunc"><code>http.HandlerFunc()</code></a> adapter, like so:</p>
+
+<figure class="code go">
+<pre><span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
+<span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;/&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="nx">home</span><span class="p">)</span><span class="p">)</span></pre>
+</figure>
+
+<p>The <code>http.HandlerFunc()</code> adapter works by automatically adding a <code>ServeHTTP()</code> method to the <code>home</code> function. When executed, this <code>ServeHTTP()</code> method then simply <em>calls the code inside of the original <code>home</code> function</em>. It&rsquo;s a roundabout but convenient way of coercing a normal function into satisfying the <code>http.Handler</code> interface.</p>
+
+<p>Throughout this project so far we&rsquo;ve been using the <code>HandleFunc()</code> method to register our handler functions with the servemux. This is just some syntactic sugar that transforms a function to a handler and registers it in one step, instead of having to do it manually. The example immediately above is functionality equivalent to this:</p>
+
+<figure class="code go">
+<pre><span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
+<span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/&#34;</span><span class="p">,</span> <span class="nx">home</span><span class="p">)</span></pre>
+</figure>
+
+<h3 id="chaining-handlers">Chaining handlers</h3>
+
+<p>The eagle-eyed of you might have noticed something interesting right at the start of this project. The <a href="https://pkg.go.dev/net/http/#ListenAndServe"><code>http.ListenAndServe()</code></a> function takes a <code>http.Handler</code> object as the second parameter:</p>
+
+<figure class="code go">
+<pre><span class="kd">func</span> <span class="nf">ListenAndServe</span><span class="p">(</span><span class="nx">addr</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">handler</span> <span class="nx">Handler</span><span class="p">)</span> <span class="kt">error</span></pre>
+</figure>
+
+<p>&hellip; but we&rsquo;ve been passing in a servemux.</p>
+
+<p>We were able to do this because the servemux also has a <a href="https://pkg.go.dev/net/http/#ServeMux.ServeHTTP"><code>ServeHTTP()</code></a> method, meaning that it too satisfies the <code>http.Handler</code> interface.</p>
+
+<p>For me it simplifies things to think of the servemux as just being a <em>special kind of handler</em>, which instead of providing a response itself passes the request on to a second handler. This isn&rsquo;t as much of a leap as it might first sound. Chaining handlers together is a very common idiom in Go, and something that we&rsquo;ll do a lot of later in this project.</p>
+
+<p>In fact, what exactly is happening is this: When our server receives a new HTTP request, it calls the servemux&rsquo;s <code>ServeHTTP()</code> method. This looks up the relevant handler based on the request method and URL path, and in turn calls that handler’s <code>ServeHTTP()</code> method. You can think of a Go web application as a <em>chain of <code>ServeHTTP()</code> methods being called one after another</em>.</p>
+
+<h3 id="requests-are-handled-concurrently">Requests are handled concurrently</h3>
+
+<p>There is one more thing that&rsquo;s really important to point out: <em>all incoming HTTP requests are served in their own goroutine</em>. For busy servers, this means it&rsquo;s very likely that the code in or called by your handlers will be running concurrently. While this helps make Go blazingly fast, the downside is that you need to be aware of (and protect against) <a href="https://www.alexedwards.net/blog/understanding-mutexes">race conditions</a> when accessing shared resources from your handlers.</p>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="02.09-serving-static-files.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="03.00-configuration-and-error-handling.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "02.09-serving-static-files.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "03.00-configuration-and-error-handling.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

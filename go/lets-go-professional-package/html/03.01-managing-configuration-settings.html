@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>Managing configuration settings &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="03.00-configuration-and-error-handling.html">Configuration and error handling</a> &rsaquo; Managing configuration settings</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="03.00-configuration-and-error-handling.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="03.02-structured-logging.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 3.1.</div>
+			<h2 id="managing-configuration-settings">Managing configuration settings</h2>
+
+<p>Our web application&rsquo;s <code>main.go</code> file currently contains a couple of hard-coded configuration settings:</p>
+
+<ul>
+<li>The network address for the server to listen on (currently <code>&quot;:4000&quot;</code>)</li>
+<li>The file path for the static files directory (currently <code>&quot;./ui/static&quot;</code>)</li>
+</ul>
+
+<p>Having these hard-coded isn&rsquo;t ideal. There&rsquo;s no separation between our configuration settings and code, and we can&rsquo;t change the settings at runtime (which is important if you need different settings for development, testing and production environments).</p>
+
+<p>In this chapter we&rsquo;ll start to improve that, beginning by making the network address for our server configurable at runtime.</p>
+
+<h3 id="command-line-flags">Command-line flags</h3>
+
+<p>In Go, a common and idiomatic way to manage configuration settings is to use <dfn>command-line flags</dfn> when starting an application. For example:</p>
+
+<figure class="code bash">
+<pre>$ go run ./cmd/web -addr=&#34;:80&#34;</pre>
+</figure>
+
+<p>The easiest way to accept and parse a command-line flag in your application is with a line of code like this:</p>
+
+<figure class="code go">
+<pre><span class="nx">addr</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="s">&#34;:4000&#34;</span><span class="p">,</span> <span class="s">&#34;HTTP network address&#34;</span><span class="p">)</span></pre>
+</figure>
+
+<p>This essentially defines a new command-line flag with the name <code>addr</code>, a default value of <code>&quot;:4000&quot;</code> and some short help text explaining what the flag controls. The value of the flag will be stored in the <code>addr</code> variable at runtime.</p>
+
+<p>Let&rsquo;s use this in our application and swap out the hard-coded network address in favor of a command-line flag instead:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;flag&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span>    <span class="s">&#34;log&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Define a new command-line flag with the name &#39;addr&#39;, a default value of &#34;:4000&#34;
+</span><span class="c1"></span>    <span class="c1">// and some short help text explaining what the flag controls. The value of the
+</span><span class="c1"></span>    <span class="c1">// flag will be stored in the addr variable at runtime.
+</span><span class="c1"></span>    <span class="nx">addr</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="s">&#34;:4000&#34;</span><span class="p">,</span> <span class="s">&#34;HTTP network address&#34;</span><span class="p">)</span>
+
+    <span class="c1">// Importantly, we use the flag.Parse() function to parse the command-line flag.
+</span><span class="c1"></span>    <span class="c1">// This reads in the command-line flag value and assigns it to the addr
+</span><span class="c1"></span>    <span class="c1">// variable. You need to call this *before* you use the addr variable
+</span><span class="c1"></span>    <span class="c1">// otherwise it will always contain the default value of &#34;:4000&#34;. If any errors are
+</span><span class="c1"></span>    <span class="c1">// encountered during parsing the application will be terminated.
+</span><span class="c1"></span>    <span class="nx">flag</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">fileServer</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">FileServer</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">Dir</span><span class="p">(</span><span class="s">&#34;./ui/static/&#34;</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /static/&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nf">StripPrefix</span><span class="p">(</span><span class="s">&#34;/static&#34;</span><span class="p">,</span> <span class="nx">fileServer</span><span class="p">)</span><span class="p">)</span>
+    
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /{$}&#34;</span><span class="p">,</span> <span class="nx">home</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /snippet/view/{id}&#34;</span><span class="p">,</span> <span class="nx">snippetView</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /snippet/create&#34;</span><span class="p">,</span> <span class="nx">snippetCreate</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;POST /snippet/create&#34;</span><span class="p">,</span> <span class="nx">snippetCreatePost</span><span class="p">)</span>
+
+    <span class="c1">// The value returned from the flag.String() function is a pointer to the flag
+</span><span class="c1"></span>    <span class="c1">// value, not the value itself. So in this code, that means the addr variable 
+</span><span class="c1"></span>    <span class="c1">// is actually a pointer, and we need to dereference it (i.e. prefix it with
+</span><span class="c1"></span>    <span class="c1">// the * symbol) before using it. Note that we&#39;re using the log.Printf() 
+</span><span class="c1"></span>    <span class="c1">// function to interpolate the address with the log message.
+</span><span class="c1"></span>    <span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;starting server on %s&#34;</span><span class="p">,</span> <span class="o">*</span><span class="nx">addr</span><span class="p">)</span>
+
+    <span class="c1">// And we pass the dereferenced addr pointer to http.ListenAndServe() too.
+</span><span class="c1"></span>    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="o">*</span><span class="nx">addr</span><span class="p">,</span> <span class="nx">mux</span><span class="p">)</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>Save this file and try using the <code>-addr</code> flag when you start the application. You should find that the server now listens on whatever address you specify, like so:</p>
+
+<figure class="code bash">
+<pre>$ go run ./cmd/web -addr=&#34;:9999&#34;
+<samp>2024/03/18 11:29:23 starting server on :9999</samp></pre>
+</figure>
+
+<aside class="note"><p>
+<strong>Note:</strong> Ports 0-1023 are restricted and (typically) can only be used by services which have root privileges. If you try to use one of these ports you should get a <code>bind: permission denied</code> error message on start-up.
+</p></aside>
+
+<h3 id="default-values">Default values</h3>
+
+<p>Command-line flags are completely optional. For instance, if you run the application with no <code>-addr</code> flag the server will fall back to listening on address <code>&quot;:4000&quot;</code> (which is the default value we specified).</p>
+
+<figure class="code bash">
+<pre>$ go run ./cmd/web
+<samp>2024/03/18 11:29:23 starting server on :4000</samp></pre>
+</figure>
+
+<p>There are no rules about what to use as the default values for your command-line flags. I like to use defaults which make sense for my development environment, because it saves me time and typing when I&rsquo;m building an application. But YMMV. You might prefer the safer approach of setting defaults for your production environment instead.</p>
+
+<h3 id="type-conversions">Type conversions</h3>
+
+<p>In the code above we&rsquo;ve used the <code>flag.String()</code> function to define the command-line flag. This has the benefit of converting whatever value the user provides at runtime to a <code>string</code> type. If the value <em>can&rsquo;t</em> be converted to a <code>string</code> then the application will print an error message and exit.</p>
+
+<p>Go also has a range of other functions including <a href="https://pkg.go.dev/flag/#Int"><code>flag.Int()</code></a>, <a href="https://pkg.go.dev/flag/#Bool"><code>flag.Bool()</code></a>, <a href="https://pkg.go.dev/flag/#Float64"><code>flag.Float64()</code></a> and <a href="https://pkg.go.dev/flag#Duration"><code>flag.Duration()</code></a> for defining flags. These work in exactly the same way as <code>flag.String()</code>, except they automatically convert the command-line flag value to the appropriate type.</p>
+
+<h3 id="automated-help">Automated help</h3>
+
+<p>Another great feature is that you can use the <code>-help</code> flag to list all the available command-line flags for an application and their accompanying help text. Give it a try:</p>
+
+<figure class="code bash">
+<pre>$ go run ./cmd/web -help
+<samp>Usage of /tmp/go-build3672328037/b001/exe/web:
+  -addr string
+        HTTP network address (default &#34;:4000&#34;)</samp></pre>
+</figure>
+
+<p>So, all in all, this is starting to look really good. We&rsquo;ve introduced an idiomatic way of managing configuration settings for our application at runtime, and thanks to the <code>-help</code> flag, we&rsquo;ve also got an explicit and documented interface between our application and its operating configuration.</p>
+
+<hr />
+
+<h3 id="additional-information">Additional information</h3>
+
+<h4 id="environment-variables">Environment variables</h4>
+
+<p>If you&rsquo;ve built and deployed web applications before, then you&rsquo;re probably thinking <em>what about environment variables? Surely it&rsquo;s <a href="http://12factor.net/config">good-practice</a> to store configuration settings there?</em></p>
+
+<p>If you want, you <em>can</em> store your configuration settings in environment variables and access them directly from your application by using the <a href="https://pkg.go.dev/os/#Getenv"><code>os.Getenv()</code></a> function like so:</p>
+
+<figure class="code go">
+<pre><span class="nx">addr</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Getenv</span><span class="p">(</span><span class="s">&#34;SNIPPETBOX_ADDR&#34;</span><span class="p">)</span></pre>
+</figure>
+
+<p>But this has some drawbacks compared to using command-line flags. You can&rsquo;t specify a default setting (the return value from <code>os.Getenv()</code> is the empty string if the environment variable doesn&rsquo;t exist), you don&rsquo;t get the <code>-help</code> functionality that you do with command-line flags, and the return value from <code>os.Getenv()</code> is <em>always</em> a string &mdash; you don’t get automatic type conversions like you do with <code>flag.Int()</code>, <code>flag.Bool()</code> and the other command line flag functions.</p>
+
+<p>Instead, you can get the best of both worlds by passing the environment variable as a command-line flag when starting the application. For example:</p>
+
+<figure class="code bash">
+<pre>$ export SNIPPETBOX_ADDR=&#34;:9999&#34;
+$ go run ./cmd/web -addr=$SNIPPETBOX_ADDR
+<samp>2024/03/18 11:29:23 starting server on :9999</samp></pre>
+</figure>
+
+<h4 id="boolean-flags">Boolean flags</h4>
+
+<p>For flags defined with <code>flag.Bool()</code>, omitting a value when starting the application is the same as writing <code>-flag=true</code>. The following two commands are equivalent:</p>
+
+<figure class="code bash">
+<pre>$ go run ./example -flag=true
+$ go run ./example -flag</pre>
+</figure>
+
+<p>You must explicitly use <code>-flag=false</code> if you want to set a boolean flag value to false.</p>
+
+<h4 id="pre-existing-variables">Pre-existing variables</h4>
+
+<p>It&rsquo;s possible to parse command-line flag values into the memory addresses of pre-existing variables, using <a href="https://pkg.go.dev/flag/#FlagSet.StringVar"><code>flag.StringVar()</code></a>, <a href="https://pkg.go.dev/flag/#FlagSet.IntVar"><code>flag.IntVar()</code></a>, <a href="https://pkg.go.dev/flag/#FlagSet.BoolVar"><code>flag.BoolVar()</code></a>, and similar functions for other types.</p>
+
+<p>These functions are particularly useful if you want to store all your configuration settings in a single struct. As a rough example:</p>
+
+<figure class="code go">
+<pre><span class="kd">type</span> <span class="nx">config</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">addr</span>      <span class="kt">string</span>
+    <span class="nx">staticDir</span> <span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="o">...</span>
+
+<span class="kd">var</span> <span class="nx">cfg</span> <span class="nx">config</span>
+
+<span class="nx">flag</span><span class="p">.</span><span class="nf">StringVar</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">cfg</span><span class="p">.</span><span class="nx">addr</span><span class="p">,</span> <span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="s">&#34;:4000&#34;</span><span class="p">,</span> <span class="s">&#34;HTTP network address&#34;</span><span class="p">)</span>
+<span class="nx">flag</span><span class="p">.</span><span class="nf">StringVar</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">cfg</span><span class="p">.</span><span class="nx">staticDir</span><span class="p">,</span> <span class="s">&#34;static-dir&#34;</span><span class="p">,</span> <span class="s">&#34;./ui/static&#34;</span><span class="p">,</span> <span class="s">&#34;Path to static assets&#34;</span><span class="p">)</span>
+
+<span class="nx">flag</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="p">)</span></pre>
+</figure>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="03.00-configuration-and-error-handling.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="03.02-structured-logging.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "03.00-configuration-and-error-handling.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "03.02-structured-logging.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

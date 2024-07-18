@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>Method-based routing &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="02.00-foundations.html">Foundations</a> &rsaquo; Method-based routing</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="02.04-wildcard-route-patterns.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="02.06-customizing-responses.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 2.5.</div>
+			<h2 id="method-based-routing">Method-based routing</h2>
+
+<p>Next, let&rsquo;s follow HTTP good practice and restrict our application so that it only responds to requests with an appropriate <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods">HTTP method</a>.</p>
+
+<p>As we progress through our application build, our <code>home</code>, <code>snippetView</code> and <code>snippetCreate</code> handlers will merely retrieve information and display pages to the user, so it makes sense that these handlers should be restricted to acting on <code>GET</code> requests.</p>
+
+<p>To restrict a route to a specific HTTP method, you can prefix the route pattern with the necessary HTTP method when declaring it, like so:</p>
+
+<figure class="code go">
+<figcaption>File: main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
+    <span class="c1">// Prefix the route patterns with the required HTTP method (for now, we will
+</span><span class="c1"></span>    <span class="c1">// restrict all three routes to acting on GET requests).
+</span><span class="c1"></span>    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /{$}&#34;</span><span class="p">,</span> <span class="nx">home</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /snippet/view/{id}&#34;</span><span class="p">,</span> <span class="nx">snippetView</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /snippet/create&#34;</span><span class="p">,</span> <span class="nx">snippetCreate</span><span class="p">)</span>
+
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Print</span><span class="p">(</span><span class="s">&#34;starting server on :4000&#34;</span><span class="p">)</span>
+
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="s">&#34;:4000&#34;</span><span class="p">,</span> <span class="nx">mux</span><span class="p">)</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<aside class="note"><p>
+<strong>Note:</strong> The HTTP methods in route patterns are case sensitive and should always be written in uppercase, followed by <em>a single space character</em>. You can only include one HTTP method in each route pattern.
+</p></aside>
+
+<p>It&rsquo;s also worth mentioning that when you register a route pattern which uses the <code>GET</code> method, it will match both <code>GET</code> and <code>HEAD</code> requests. All other methods (like <code>POST</code>, <code>PUT</code> and <code>DELETE</code>) require an exact match.</p>
+
+<p>Let&rsquo;s test out this change by using curl to make some requests to our application. If you&rsquo;re following along, start by making a regular <code>GET</code> request to <code>http://localhost:4000/</code>, like so:</p>
+
+<figure class="code bash">
+<pre>$ curl -i localhost:4000/
+<samp>HTTP/1.1 200 OK
+Date: Wed, 18 Mar 2024 11:29:23 GMT
+Content-Length: 21
+Content-Type: text/plain; charset=utf-8
+
+Hello from Snippetbox</samp></pre>
+</figure>
+
+<p>The response here looks good. We can see that our route still works, and we get back a <code>200 OK</code> status and a <code>Hello from Snippetbox</code> response body, just like before.</p>
+
+<p>You can also go ahead and try making a <code>HEAD</code> request for the same URL. You should see that this also works correctly, returning <em>just the HTTP response headers</em>, and no response body.</p>
+
+<figure class="code bash">
+<pre>$ curl --head localhost:4000/
+<samp>HTTP/1.1 200 OK
+Date: Wed, 18 Mar 2024 11:29:23 GMT
+Content-Length: 21
+Content-Type: text/plain; charset=utf-8</samp></pre>
+</figure>
+
+<p>In contrast, let&rsquo;s try making a <code>POST</code> request to <code>http://localhost:4000/</code>. The <code>POST</code> method isn&rsquo;t supported for this route, so you should get an error response similar to this:</p>
+
+<figure class="code bash">
+<pre>$ curl -i -d &#34;&#34; localhost:4000/
+<samp>HTTP/1.1 405 Method Not Allowed
+Allow: GET, HEAD
+Content-Type: text/plain; charset=utf-8
+X-Content-Type-Options: nosniff
+Date: Wed, 18 Mar 2024 11:29:23 GMT
+Content-Length: 19
+
+Method Not Allowed</samp>*</pre>
+</figure>
+
+<aside class="note"><p>
+<strong>Note:</strong> The curl <code>-d</code> flag is used to declare any HTTP <code>POST</code> data that you want to include in the request body. In the command above we use <code>-d &quot;&quot;</code>, which means that the request body will be empty, but the request will still be sent with the HTTP method <code>POST</code> (rather than the default method of <code>GET</code>).
+</p></aside>
+
+<p>So that’s looking really good. We can see that Go&rsquo;s servemux has automatically sent a <code>405 Method Not Allowed</code> response for us, including an <code>Allow</code> header which lists the HTTP
+methods that <em>are</em> supported for the request URL.</p>
+
+<h3 id="adding-a-post-only-route-and-handler">Adding a POST-only route and handler</h3>
+
+<p>Let&rsquo;s also add a new <code>snippetCreatePost</code> handler to our codebase, which we&rsquo;ll use later on to create and save a new snippet in a database. Because creating and saving a snippet is a non-idempotent action that will change the state of our server, we want make sure that this handler acts on <code>POST</code> requests only.</p>
+
+<p>All in all, we&rsquo;ll want our fourth handler and route to look like this:</p>
+
+<table>
+<thead>
+<tr>
+<th>Route pattern</th>
+<th>Handler</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>GET /{$}</td>
+<td>home</td>
+<td>Display the home page</td>
+</tr>
+
+<tr>
+<td>GET /snippet/view/{id}</td>
+<td>snippetView</td>
+<td>Display a specific snippet</td>
+</tr>
+
+<tr>
+<td>GET /snippet/create</td>
+<td>snippetCreate</td>
+<td>Display a form for creating a new snippet</td>
+</tr>
+
+<tr>
+<td><strong>POST /snippet/create</strong></td>
+<td><strong>snippetCreatePost</strong></td>
+<td><strong>Save a new snippet</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Let&rsquo;s go ahead and add the necessary code to our <code>main.go</code> file, like so:</p>
+
+<figure class="code go">
+<figcaption>File: main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="c1">// Add a snippetCreatePost handler function.
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">snippetCreatePost</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&#34;Save a new snippet...&#34;</span><span class="p">)</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /{$}&#34;</span><span class="p">,</span> <span class="nx">home</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /snippet/view/{id}&#34;</span><span class="p">,</span> <span class="nx">snippetView</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /snippet/create&#34;</span><span class="p">,</span> <span class="nx">snippetCreate</span><span class="p">)</span>
+    <span class="c1">// Create the new route, which is restricted to POST requests only.
+</span><span class="c1"></span>    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;POST /snippet/create&#34;</span><span class="p">,</span> <span class="nx">snippetCreatePost</span><span class="p">)</span>
+    
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Print</span><span class="p">(</span><span class="s">&#34;starting server on :4000&#34;</span><span class="p">)</span>
+
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="s">&#34;:4000&#34;</span><span class="p">,</span> <span class="nx">mux</span><span class="p">)</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>Notice that it&rsquo;s totally OK to declare two (or more) separate routes that have different HTTP methods but otherwise have the same pattern, like we are doing here with<code>&quot;GET /snippet/create&quot;</code> and <code>&quot;POST /snippet/create&quot;</code>.</p>
+
+<p>If you restart the application and try making some requests with the URL path <code>/snippet/create</code>, you should now see different responses depending on the request method that you use.</p>
+
+<figure class="code bash">
+<pre>$ curl -i localhost:4000/snippet/create
+<samp>HTTP/1.1 200 OK
+Date: Wed, 18 Mar 2024 11:29:23 GMT
+Content-Length: 50
+Content-Type: text/plain; charset=utf-8
+
+Display a form for creating a new snippet...</samp>
+
+$ curl -i -d &#34;&#34; localhost:4000/snippet/create
+<samp>HTTP/1.1 200 OK
+Date: Wed, 18 Mar 2024 11:29:23 GMT
+Content-Length: 21
+Content-Type: text/plain; charset=utf-8
+
+Save a new snippet...</samp>
+
+$ curl -i -X DELETE localhost:4000/snippet/create
+<samp>HTTP/1.1 405 Method Not Allowed
+Allow: GET, HEAD, POST
+Content-Type: text/plain; charset=utf-8
+X-Content-Type-Options: nosniff
+Date: Wed, 18 Mar 2024 11:29:23 GMT
+Content-Length: 19
+
+Method Not Allowed</samp></pre>
+</figure>
+
+<hr />
+
+<h3 id="additional-information">Additional information</h3>
+
+<h4 id="method-precedence">Method precedence</h4>
+
+<p>The <em>most specific pattern wins</em> rule also applies if you have route patterns that overlap because of a HTTP method.</p>
+
+<p>It&rsquo;s important to be aware that a route pattern which doesn&rsquo;t include a method &mdash; like <code>&quot;/article/{id}&quot;</code> &mdash; will match incoming HTTP requests with <em>any method</em>. In contrast, a route like <code>&quot;POST /article/{id}&quot;</code> will only match requests which have the method <code>POST</code>. So if you declare the overlapping routes <code>&quot;/article/{id}&quot;</code> and <code>&quot;POST /article/{id}&quot;</code> in your application, then the <code>&quot;POST /article/{id}&quot;</code> route will take precedence.</p>
+
+<h4 id="handler-naming">Handler naming</h4>
+
+<p>I&rsquo;d also like to emphasize that there is no right or wrong way to name your handlers in Go.</p>
+
+<p>In this project, we&rsquo;ll follow a convention of postfixing the names of any handlers that deal with <code>POST</code> requests with the word &lsquo;Post&rsquo;. Like so:</p>
+
+<table>
+<thead>
+<tr>
+<th>Route pattern</th>
+<th>Handler</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>GET /snippet/create</td>
+<td>snippetCreate</td>
+<td>Display a form for creating a new snippet</td>
+</tr>
+
+<tr>
+<td>POST /snippet/create</td>
+<td>snippetCreate<strong>Post</strong></td>
+<td>Create a new snippet</td>
+</tr>
+</tbody>
+</table>
+<p>But in your own work it&rsquo;s not necessary to follow this pattern. For example, you could prefix handler names with the words &lsquo;get&rsquo; and &lsquo;post&rsquo; instead, like this:</p>
+
+<table>
+<thead>
+<tr>
+<th>Route pattern</th>
+<th>Handler</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>GET /snippet/create</td>
+<td>getSnippetCreate</td>
+<td>Display a form for creating a new snippet</td>
+</tr>
+
+<tr>
+<td>POST /snippet/create</td>
+<td>postSnippetCreate</td>
+<td>Create a new snippet</td>
+</tr>
+</tbody>
+</table>
+<p>Or even give the handlers completely different names. For example:</p>
+
+<table>
+<thead>
+<tr>
+<th>Route pattern</th>
+<th>Handler</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>GET /snippet/create</td>
+<td>newSnippetForm</td>
+<td>Display a form for creating a new snippet</td>
+</tr>
+
+<tr>
+<td>POST /snippet/create</td>
+<td>createSnippet</td>
+<td>Create a new snippet</td>
+</tr>
+</tbody>
+</table>
+<p>Basically, you have the freedom in Go to choose a naming convention for your handlers that works for you and fits with your brain.</p>
+
+<h4 id="third-party-routers">Third-party routers</h4>
+
+<p>The wildcard and method-based routing functionality that we&rsquo;ve been using in the past two chapters is very new to Go &mdash; it only became part of the standard library in Go 1.22. While this is a very welcome addition to the language and a big improvement, you might find that there are still times where the standard library routing functionality doesn&rsquo;t provide everything that you need.</p>
+
+<p>For example, the following things are not currently supported:</p>
+
+<ul>
+<li>Sending custom <code>404 Not Found</code> and <code>405 Method Not Allowed</code> responses to the user (although there is an <a href="https://github.com/golang/go/issues/65648">open proposal</a> regarding this).</li>
+<li>Using regular expressions in your route patterns or wildcards.</li>
+<li>Matching multiple HTTP methods in a single route declaration.</li>
+<li>Automatic support for <code>OPTIONS</code> requests.</li>
+<li>Routing requests to handlers based on unusual things, like HTTP request headers.</li>
+</ul>
+
+<p>If you need these features in your application, you&rsquo;ll need to use a third-party router package. The ones that I recommend are <a href="https://github.com/julienschmidt/httprouter">httprouter</a>, <a href="https://github.com/go-chi/chi">chi</a>, <a href="https://github.com/alexedwards/flow">flow</a> and <a href="https://github.com/gorilla/mux">gorilla/mux</a>, and you can find a comparison of them and guidance about which one to use in <a href="https://www.alexedwards.net/blog/which-go-router-should-i-use">this blog post</a>.</p>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="02.04-wildcard-route-patterns.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="02.06-customizing-responses.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "02.04-wildcard-route-patterns.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "02.06-customizing-responses.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

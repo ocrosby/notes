@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>Installing a database driver &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="04.00-database-driven-responses.html">Database-driven responses</a> &rsaquo; Installing a database driver</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="04.01-setting-up-mysql.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="04.03-modules-and-reproducible-builds.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 4.2.</div>
+			<h2 id="installing-a-database-driver">Installing a database driver</h2>
+
+<p>To use MySQL from our Go web application we need to install a <dfn>database driver</dfn>. This essentially acts as a middleman, translating commands between Go and the MySQL database itself.</p>
+
+<p>You can find a comprehensive <a href="https://github.com/golang/go/wiki/SQLDrivers">list of available drivers</a> on the Go wiki, but for our application we&rsquo;ll use the popular <a href="https://github.com/go-sql-driver/mysql"><code>go-sql-driver/mysql</code></a> driver.</p>
+
+<p>To download it, go to your project directory and run the <code>go get</code> command like so:</p>
+
+<figure class="code bash">
+<pre>$ cd $HOME/code/snippetbox
+$ go get github.com/go-sql-driver/mysql@v1
+<samp>go: added filippo.io/edwards25519 v1.1.0
+go: added github.com/go-sql-driver/mysql v1.8.0</samp></pre>
+</figure>
+
+<aside class="note"><p>
+<strong>Note:</strong> The <code>go get</code> command will recursively download any dependencies that the package has. In this case, the <code>github.com/go-sql-driver/mysql</code> package itself uses the <code>filippo.io/edwards25519</code> package, so this will be downloaded too.
+</p></aside>
+
+<p>Notice here that we&rsquo;re postfixing the package path with <code>@v1</code> to indicate that we want to download the <a href="https://github.com/go-sql-driver/mysql/releases">latest available version</a> of <code>github.com/go-sql-driver/mysql</code> <em>with the major release number 1</em>.</p>
+
+<p>At the time of writing the latest version is <code>v1.8.0</code>, but the version you download might be <code>v1.8.1</code>, <code>v1.9.0</code> or similar &mdash; and that&rsquo;s OK. Because the <code>go-sql-driver/mysql</code> package uses <a href="https://semver.org/">semantic versioning</a> for its releases, any <code>v1.x.x</code> version should be compatible with the rest of the code in this book.</p>
+
+<p>As an aside, if you want to download the latest version, irrespective of version number, you can simply omit the <code>@version</code> suffix like so:</p>
+
+<figure class="code bash">
+<pre>$ go get github.com/go-sql-driver/mysql</pre>
+</figure>
+
+<p>Or if you want to download a specific version of a package, you can use the full version number. For example:</p>
+
+<figure class="code bash">
+<pre>$ go get github.com/go-sql-driver/mysql@v1.0.3</pre>
+</figure>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="04.01-setting-up-mysql.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="04.03-modules-and-reproducible-builds.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "04.01-setting-up-mysql.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "04.03-modules-and-reproducible-builds.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

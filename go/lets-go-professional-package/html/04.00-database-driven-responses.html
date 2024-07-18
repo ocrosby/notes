@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>Database-driven responses &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; Database-driven responses</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="03.05-isolating-the-application-routes.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="04.01-setting-up-mysql.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 4.</div>
+			<h1 id="database-driven-responses">Database-driven responses</h1>
+
+<p>For our Snippetbox web application to become truly useful we need somewhere to store (or <em>persist</em>) the data entered by users, and the ability to query this data store dynamically at runtime.</p>
+
+<p>There are many different data stores we <em>could</em> use for our application &mdash; each with different pros and cons &mdash; but we’ll opt for the popular relational database <a href="https://www.mysql.com/">MySQL</a>.</p>
+
+<aside class="note"><p>
+<strong>Note:</strong> All of the general code patterns in this section of the book also apply to other databases like PostgreSQL or SQLite too. If you&rsquo;re following along and would prefer to use an alternative database, you can, but I recommend using MySQL for now to get a feeling for how everything works and then swapping databases as a practice exercise once you&rsquo;ve finished the book.
+</p></aside>
+
+<p>In this section you&rsquo;ll learn how to:</p>
+
+<ul>
+<li><a href="04.02-installing-a-database-driver.html">Install a database driver</a> to act as a &lsquo;middleman&rsquo; between MySQL and your Go application.</li>
+<li><a href="04.04-creating-a-database-connection-pool.html">Connect to MySQL</a> from your web application (specifically, you’ll learn how to establish a pool of reusable connections).</li>
+<li>Create a <a href="04.05-designing-a-database-model.html">standalone <code>models</code> package</a>, so that your database logic is reusable and decoupled from your web application.</li>
+<li>Use the appropriate functions in Go’s <code>database/sql</code> package to  execute different types of SQL statements, and how to avoid common errors that can lead to your server running out of resources.</li>
+<li><a href="04.06-executing-sql-statements.html">Prevent SQL injection</a> attacks by correctly using placeholder parameters.</li>
+<li>Use <a href="04.09-transactions-and-other-details.html">transactions</a>, so that you can execute multiple SQL statements in one atomic action.</li>
+</ul>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="03.05-isolating-the-application-routes.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="04.01-setting-up-mysql.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "03.05-isolating-the-application-routes.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "04.01-setting-up-mysql.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

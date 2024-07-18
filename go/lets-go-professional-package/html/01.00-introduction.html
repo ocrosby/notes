@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>Introduction &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; Introduction</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="00.01-contents.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="01.01-prerequisites.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 1.</div>
+			<h1 id="introduction">Introduction</h1>
+
+<p>In this book we&rsquo;ll be building a web application called Snippetbox, which lets people paste and share snippets of text &mdash; a bit like <a href="https://pastebin.com/">Pastebin</a> or GitHub&rsquo;s <a href="https://gist.github.com/">Gists</a>. Towards the end of the build it will look a bit like this:</p>
+
+<figure class="img">
+<img src="assets/img/01.00-01.png" alt="01.00-01.png" />
+</figure>
+
+<p>Our application will start off super simple, with just one web page. Then with each chapter we&rsquo;ll build it up step-by-step until a user can save and view snippets via the app. This will take us through topics like how to structure a project, routing requests, working with a database, processing forms and displaying dynamic data safely.</p>
+
+<p>Then later in the book we&rsquo;ll add user accounts, and restrict the application so that only registered users can create snippets. This will take us through more advanced topics like configuring a HTTPS server, session management, user authentication and middleware.</p>
+
+<h3 id="conventions">Conventions</h3>
+
+<p>Code blocks in this book are shown with a silver background, like the example below. If a code block is particularly long, any parts that aren&rsquo;t relevant may be replaced with an ellipsis. To make it easy to follow along, most code blocks also have a title bar at the top indicating the name of the file that the code is in. Like this:</p>
+
+<figure class="code go">
+<figcaption>File: hello.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span> <span class="c1">// Indicates that some existing code has been omitted.
+</span><span class="c1"></span>
+<span class="kd">func</span> <span class="nf">sayHello</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Hello world!&#34;</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>Terminal (command line) instructions are shown with a black background and start with a dollar symbol. These commands should work on any Unix-based operating system, including Mac OSX and Linux. Sample output is shown in silver beneath the command, like so:</p>
+
+<figure class="code bash">
+<pre>$ echo &#34;Hello world!&#34;
+<samp>Hello world!</samp></pre>
+</figure>
+
+<p>If you&rsquo;re using Windows, you should replace the command with the DOS equivalent or carry out the action via the normal Windows GUI.</p>
+
+<p>Please note that the dates and timestamps shown in screenshots and the example output from commands are illustrative only. They do not necessarily align with each other, or progress chronologically throughout the book.</p>
+
+<p>Some chapters in this book end with an <em>additional information</em> section. These sections contain information that isn&rsquo;t relevant to our application build, but is still important (or sometimes, just interesting) to know about. If you&rsquo;re very new to Go, you might want to skip these parts and circle back to them later.</p>
+
+<aside class="hint"><p>
+<strong>Hint:</strong> If you&rsquo;re following along with the application build I recommend using the HTML version of this book instead of the PDF or EPUB. The HTML version works in all browsers, and the proper formatting of code blocks is retained if you want to copy-and-paste code directly from the book.</p>
+
+<p>When using the HTML version, you can also use the left and right arrow keys on your keyboard to navigate between chapters.
+</p></aside>
+
+<h3 id="about-the-author">About the author</h3>
+
+<p>Hey, I’m Alex Edwards, a full-stack web developer and author. I live near Innsbruck, Austria.</p>
+
+<p>I’ve been working with Go for over 10 years, building production applications for myself and commercial clients, and helping people all around the world improve their Go skills.</p>
+
+<p>You can see more of my writing on <a href="https://www.alexedwards.net/blog">my blog</a> (where I publish detailed tutorials), some of my open-source work on <a href="https://github.com/alexedwards/">GitHub</a>, and you can also follow me on <a href="https://www.instagram.com/ajmedwards/">Instagram</a> and <a href="https://twitter.com/ajmedwards">Twitter</a>.</p>
+
+<h3 id="copyright-and-disclaimer">Copyright and disclaimer</h3>
+
+<p><em>Let&rsquo;s Go: Learn to build professional web applications with Go</em>. Copyright © 2024 Alex Edwards.</p>
+
+<p>Last updated 2024-04-05 09:15:11 UTC. Version 2.22.1.</p>
+
+<p>The Go gopher was designed by <a href="http://reneefrench.blogspot.com/">Renee French</a> and is used under the Creative Commons 3.0 Attributions license. Cover gopher adapted from vectors by <a href="https://github.com/egonelbre/gophers">Egon Elbre</a>.</p>
+
+<p><em>The information provided within this book is for general informational purposes only. While the author and publisher have made every effort to ensure the accuracy of the information within this book was correct at time of publication there are no representations or warranties, express or implied, about the completeness, accuracy, reliability, suitability or availability with respect to the information, products, services, or related graphics contained in this book for any purpose. Any use of this information is at your own risk.</em></p>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="00.01-contents.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="01.01-prerequisites.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "00.01-contents.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "01.01-prerequisites.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

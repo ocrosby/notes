@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>Quality Controlling Code &mdash; Let's Go Further</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go Further</a> <span class="crumbs">&rsaquo; <a href="19.00-building-versioning-and-quality-control.html">Building, Versioning and Quality Control</a> &rsaquo; Quality Controlling Code</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="19.02-managing-environment-variables.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="19.04-module-proxies-and-vendoring.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 19.3.</div>
+			<h2 id="quality-controlling-code">Quality Controlling Code</h2>
+
+<p>In this chapter we&rsquo;re going to focus on adding an <code>audit</code> rule to our <code>Makefile</code> to check, test and tidy up our codebase automatically. In particular, the rule will:</p>
+
+<ul>
+<li><p>Use the <code>go mod tidy</code> command to prune any unused dependencies from the <code>go.mod</code> and <code>go.sum</code> files, and add any missing dependencies.</p></li>
+
+<li><p>Use the <code>go mod verify</code> command to check that the dependencies on your computer (located in your module cache located at <code>$GOPATH/pkg/mod</code>)  haven&rsquo;t been changed since they were downloaded and that they match the cryptographic hashes in your <code>go.sum</code> file. Running this helps ensure that the dependencies being used are the exact ones that you expect.</p></li>
+
+<li><p>Use the <code>go fmt ./...</code> command to format all <code>.go</code> files in the project directory, according to the Go standard. This will reformat files &lsquo;in place&rsquo; and output the names of any changed files.</p></li>
+
+<li><p>Use the <code>go vet ./...</code> command to check all <code>.go</code> files in the project directory. The <a href="https://golang.org/cmd/vet/"><code>go vet</code></a> tool runs a variety of <em>analyzers</em> which carry out static analysis of your code and warn you about things which might be wrong but won&rsquo;t be picked up by the compiler &mdash; such as unreachable code, unnecessary assignments, and badly-formed build tags.</p></li>
+
+<li><p>Use the <code>go test -race -vet=off ./...</code> command to run all tests in the project directory. By default, <code>go test</code> automatically executes a small subset of the <code>go vet</code> checks before running any tests, so to avoid duplication we&rsquo;ll use the <code>-vet=off</code> flag to turn this off. The <code>-race</code> flag enables Go&rsquo;s <a href="https://golang.org/doc/articles/race_detector.html">race detector</a>, which can help pick up certain classes of race conditions while tests are running.</p></li>
+
+<li><p>Use the third-party <a href="https://staticcheck.io/"><code>staticcheck</code></a> tool to carry out some <a href="https://staticcheck.io/docs/checks">additional static analysis checks</a>.</p></li>
+</ul>
+
+<p>If you&rsquo;re following along, you&rsquo;ll need to install the <code>staticcheck</code> tool on your machine at this point. The simplest way to do this is by running the <code>go install</code> command like so:</p>
+
+<figure class="code bash">
+<pre>$ go install honnef.co/go/tools/cmd/staticcheck@latest
+<samp>go: downloading honnef.co/go/tools v0.1.3
+go: downloading golang.org/x/tools v0.1.0
+go: downloading github.com/BurntSushi/toml v0.3.1
+go: downloading golang.org/x/sys v0.0.0-20210119212857-b64e53b001e4
+go: downloading golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
+go: downloading golang.org/x/mod v0.5.0</samp>
+$ which staticcheck
+<samp>/home/alex/go/bin/staticcheck</samp></pre>
+</figure>
+
+<aside class="hint"><p>
+<strong>Note:</strong> If nothing is found by the <code>which</code> command, check that your <code>$GOPATH/bin</code> directory is on your system path. If you&rsquo;re not sure where your <code>$GOPATH</code> directory is, you can find out by running <code>go env GOPATH</code> from your terminal.
+</p></aside>
+
+<p>Once that&rsquo;s installed, let&rsquo;s go ahead and create a new <code>audit</code> rule in our makefile. While we&rsquo;re at it, let&rsquo;s also add some comment blocks to help organize and clarify the purpose of our different makefile rules, like so:</p>
+
+<figure class="code shell">
+<figcaption>File: Makefile</figcaption>
+<pre>include .envrc
+
+<span class="c1"># ==================================================================================== #</span>
+<span class="c1"># HELPERS</span>
+<span class="c1"># ==================================================================================== #</span>
+
+<span class="c1">## help: print this help message</span>
+.PHONY: <span class="nb">help</span>
+help:
+	@echo <span class="s1">&#39;Usage:&#39;</span>
+	@sed -n <span class="s1">&#39;s/^##//p&#39;</span> <span class="si">${</span><span class="nv">MAKEFILE_LIST</span><span class="si">}</span> <span class="p">|</span> column -t -s <span class="s1">&#39;:&#39;</span> <span class="p">|</span>  sed -e <span class="s1">&#39;s/^/ /&#39;</span>
+
+.PHONY: confirm
+confirm:
+	@echo -n <span class="s1">&#39;Are you sure? [y/N] &#39;</span> <span class="o">&amp;&amp;</span> <span class="nb">read</span> ans <span class="o">&amp;&amp;</span> <span class="o">[</span> <span class="nv">$$</span><span class="o">{</span>ans:-N<span class="o">}</span> <span class="o">=</span> y <span class="o">]</span>
+
+<span class="c1"># ==================================================================================== #</span>
+<span class="c1"># DEVELOPMENT</span>
+<span class="c1"># ==================================================================================== #</span>
+
+<span class="c1">## run/api: run the cmd/api application</span>
+.PHONY: run/api
+run/api:
+	go run ./cmd/api -db-dsn<span class="o">=</span><span class="si">${</span><span class="nv">GREENLIGHT_DB_DSN</span><span class="si">}</span>
+
+<span class="c1">## db/psql: connect to the database using psql</span>
+.PHONY: db/psql
+db/psql:
+	psql <span class="si">${</span><span class="nv">GREENLIGHT_DB_DSN</span><span class="si">}</span>
+
+<span class="c1">## db/migrations/new name=$1: create a new database migration</span>
+.PHONY: db/migrations/new
+db/migrations/new:
+	@echo <span class="s1">&#39;Creating migration files for ${name}...&#39;</span>
+	migrate create -seq -ext<span class="o">=</span>.sql -dir<span class="o">=</span>./migrations <span class="si">${</span><span class="nv">name</span><span class="si">}</span>
+
+<span class="c1">## db/migrations/up: apply all up database migrations</span>
+.PHONY: db/migrations/up
+db/migrations/up: confirm
+	@echo <span class="s1">&#39;Running up migrations...&#39;</span>
+	migrate -path ./migrations -database <span class="si">${</span><span class="nv">GREENLIGHT_DB_DSN</span><span class="si">}</span> up
+
+<span class="c1"># ==================================================================================== #</span>
+<span class="c1"># QUALITY CONTROL</span>
+<span class="c1"># ==================================================================================== #</span>
+
+<span class="c1">## audit: tidy dependencies and format, vet and test all code</span>
+.PHONY: audit
+audit:
+	@echo <span class="s1">&#39;Tidying and verifying module dependencies...&#39;</span>
+	go mod tidy
+	go mod verify
+	@echo <span class="s1">&#39;Formatting code...&#39;</span>
+	go fmt ./...
+	@echo <span class="s1">&#39;Vetting code...&#39;</span>
+	go vet ./...
+	staticcheck ./...
+	@echo <span class="s1">&#39;Running tests...&#39;</span>
+	go <span class="nb">test</span> -race -vet<span class="o">=</span>off ./...</pre>
+</figure>
+
+<p>Now that&rsquo;s done, all you need to do is type <code>make audit</code> to run these checks before you commit any code changes into your version control system or build any binaries.</p>
+
+<p>Let&rsquo;s give it a try. If you&rsquo;ve been following along closely, the output should look very similar to this:</p>
+
+<figure class="code bash">
+<pre>$ make audit
+<samp>Tidying and verifying module dependencies...
+go mod tidy
+go: finding module for package gopkg.in/mail.v2
+go: downloading gopkg.in/mail.v2 v2.3.1
+go: found gopkg.in/mail.v2 in gopkg.in/mail.v2 v2.3.1
+go mod verify
+all modules verified
+Formatting code...
+go fmt ./...
+Vetting code...
+go vet ./...
+staticcheck ./...
+Running tests...
+go test -race -vet=off ./...
+?       greenlight.alexedwards.net/cmd/api      [no test files]
+?       greenlight.alexedwards.net/cmd/examples/cors/preflight  [no test files]
+?       greenlight.alexedwards.net/cmd/examples/cors/simple     [no test files]
+?       greenlight.alexedwards.net/internal/data        [no test files]
+?       greenlight.alexedwards.net/internal/jsonlog     [no test files]
+?       greenlight.alexedwards.net/internal/mailer      [no test files]
+?       greenlight.alexedwards.net/internal/validator   [no test files]</samp></pre>
+</figure>
+
+<p>That&rsquo;s looking good. The <code>go mod tidy</code> command resulted in some additional packages needing to be downloaded, but apart from that, all the checks completed successfully without any problems.</p>
+
+<hr />
+
+<h3 id="additional-information">Additional Information</h3>
+
+<h4 id="testing">Testing</h4>
+
+<p>We covered the topic of testing in a lot of detail in the first <em>Let&rsquo;s Go</em> book, and the same principles apply again here. If you like, feel free to revisit the testing section of <em>Let&rsquo;s Go</em> and re-implement some of those same patterns in your API. For example, you might like to try:</p>
+
+<ul>
+<li><p>Creating an end-to-end test for the <code>GET /v1/healthcheck</code> endpoint to verify that the headers and response body are what you expect.</p></li>
+
+<li><p>Creating a unit-test for the <code>rateLimit()</code> middleware to confirm that it sends a <code>429 Too Many Requests</code> response after a certain number of requests.</p></li>
+
+<li><p>Creating an end-to-end integration test, using a test database instance, which confirms that the <code>authenticate()</code> and <code>requirePermission()</code> middleware work together correctly to allow or disallow access to specific endpoints.</p></li>
+</ul>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="19.02-managing-environment-variables.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="19.04-module-proxies-and-vendoring.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "19.02-managing-environment-variables.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "19.04-module-proxies-and-vendoring.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>

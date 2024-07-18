@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>Structured logging &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="03.00-configuration-and-error-handling.html">Configuration and error handling</a> &rsaquo; Structured logging</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="03.01-managing-configuration-settings.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="03.03-dependency-injection.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 3.2.</div>
+			<h2 id="structured-logging">Structured logging</h2>
+
+<p>At the moment we&rsquo;re outputting log entries from our code using the <a href="https://pkg.go.dev/log/#Printf"><code>log.Printf()</code></a> and <a href="https://pkg.go.dev/log/#Fatal"><code>log.Fatal()</code></a> functions. A good example of this is the <em>&ldquo;starting server&hellip;&rdquo;</em> log entry that we print just before our server starts:</p>
+
+<figure class="code go">
+<pre><span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;starting server on %s&#34;</span><span class="p">,</span> <span class="o">*</span><span class="nx">addr</span><span class="p">)</span></pre>
+</figure>
+
+<p>Both the <code>log.Printf()</code> and <code>log.Fatal()</code> functions output log entries using Go&rsquo;s <dfn>standard logger</dfn> from the <a href="https://pkg.go.dev/log"><code>log</code></a> package, which &mdash; by default &mdash; prefixes a message with the local date and time and writes out to the standard error stream (which should display in your terminal window).</p>
+
+<figure class="code bash">
+<pre>$ go run ./cmd/web/
+<samp>2024/03/18 11:29:23 starting server on :4000</samp></pre>
+</figure>
+
+<p>For many applications, using the standard logger will be <em>good enough</em>, and there&rsquo;s no need to do anything more complex.</p>
+
+<p>But for applications which do a lot of logging, you may want to make the log entries easier to filter and work with. For example, you might want to distinguish between different <em>severities</em> of log entries (like informational and error entries), or to enforce a consistent structure for log entries so that they are easy for external programs or services to parse.</p>
+
+<p>To support this, the Go standard library includes the <a href="https://pkg.go.dev/log/slog"><code>log/slog</code></a> package which lets you create custom <em>structured loggers</em> that output log entries in a set format. Each log entry includes the following things:</p>
+
+<ul>
+<li>A timestamp with millisecond precision.</li>
+<li>The severity level of the log entry (<code>Debug</code>, <code>Info</code>, <code>Warn</code> or <code>Error</code>).</li>
+<li>The log message (an arbitrary <code>string</code> value).</li>
+<li>Optionally, any number of key-value pairs (known as <em>attributes</em>) containing additional information.</li>
+</ul>
+
+<h3 id="creating-a-structured-logger">Creating a structured logger</h3>
+
+<p>The code for creating a structured logger with the <code>log/slog</code> package can be a little bit confusing the first time you see it.</p>
+
+<p>The key thing to understand is that all structured loggers have a <em>structured logging handler</em> associated with them (not to be confused with a HTTP handler), and it&rsquo;s actually this handler that controls how log entries are formatted and where they are written to.</p>
+
+<p>The code for creating a logger looks like this:</p>
+
+<figure class="code go">
+<pre><span class="nx">loggerHandler</span> <span class="o">:=</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">NewTextHandler</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">slog</span><span class="p">.</span><span class="nx">HandlerOptions</span><span class="p">{</span><span class="o">...</span><span class="p">}</span><span class="p">)</span>
+<span class="nx">logger</span> <span class="o">:=</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">loggerHandler</span><span class="p">)</span></pre>
+</figure>
+
+<p>In the first line of code we first use the <a href="https://pkg.go.dev/log/slog#NewTextHandler"><code>slog.NewTextHandler()</code></a> function to create the structured logging handler. This function accepts two arguments:</p>
+
+<ul>
+<li>The first argument is the write destination for the log entries. In the example above we&rsquo;ve set it to <code>os.Stdout</code>, which means it will write log entries to the standard out stream.</li>
+<li>The second argument is a pointer to a <a href="https://pkg.go.dev/log/slog#HandlerOptions"><code>slog.HandlerOptions</code></a> struct , which you can use to customize the behavior of the handler. We&rsquo;ll take a look at some of the available customizations at the end of this chapter. If you&rsquo;re happy with the defaults and don&rsquo;t want to change anything, you can pass <code>nil</code> as the second argument instead.</li>
+</ul>
+
+<p>Then in the second line of code, we actually create the structured logger by passing the handler to the <a href="https://pkg.go.dev/log/slog#New"><code>slog.New()</code></a> function.</p>
+
+<p>In practice, it&rsquo;s more common to do all this  in a single line of code:</p>
+
+<figure class="code go">
+<pre><span class="nx">logger</span> <span class="o">:=</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">slog</span><span class="p">.</span><span class="nf">NewTextHandler</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">slog</span><span class="p">.</span><span class="nx">HandlerOptions</span><span class="p">{</span><span class="o">...</span><span class="p">}</span><span class="p">)</span><span class="p">)</span></pre>
+</figure>
+
+<h3 id="using-a-structured-logger">Using a structured logger</h3>
+
+<p>Once you&rsquo;ve created a structured logger, you can then write a log entry at a specific severity level by calling the <code>Debug()</code>, <code>Info()</code>, <code>Warn()</code> or <code>Error()</code> methods on the logger. As an example, the following line of code:</p>
+
+<figure class="code go">
+<pre><span class="nx">logger</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">&#34;request received&#34;</span><span class="p">)</span></pre>
+</figure>
+
+<p>Would result in a log entry that looks like this:</p>
+
+<figure class="code bash">
+<pre><samp>time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;request received&#34;</samp></pre>
+</figure>
+
+<p>The <code>Debug()</code>, <code>Info()</code>, <code>Warn()</code> or <code>Error()</code> methods are <em>variadic methods</em> which accept an arbitrary number of additional attributes ( key-value pairs). Like so:</p>
+
+<figure class="code go">
+<pre><span class="nx">logger</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">&#34;request received&#34;</span><span class="p">,</span> <span class="s">&#34;method&#34;</span><span class="p">,</span> <span class="s">&#34;GET&#34;</span><span class="p">,</span> <span class="s">&#34;path&#34;</span><span class="p">,</span> <span class="s">&#34;/&#34;</span><span class="p">)</span></pre>
+</figure>
+
+<p>In this example, we&rsquo;ve added two extra attributes to the log entry: the key <code>&quot;method&quot;</code> and value <code>&quot;GET&quot;</code>, and the key <code>&quot;path&quot;</code> and value <code>&quot;/&quot;</code>.  Attribute keys must always be strings, but the values can be of any type. In this example, the log entry will look like this:</p>
+
+<figure class="code bash">
+<pre><samp>time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;request received&#34; method=GET path=/</samp></pre>
+</figure>
+
+<aside class="note"><p>
+<strong>Note:</strong> If your attribute keys, values, or log message contain <code>&quot;</code> or <code>=</code> characters or any whitespace, they will be wrapped in double quotes in the log output. We can see this behavior in the example above, where the log message <code>msg=&quot;request received&quot;</code> is quoted.
+</p></aside>
+
+<h3 id="adding-structured-logging-to-our-application">Adding structured logging to our application</h3>
+
+<p>OK, let&rsquo;s go ahead and update our <code>main.go</code> file to use a structured logger instead of Go&rsquo;s standard logger. Like so:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;flag&#34;</span>
+    <span class="s">&#34;log/slog&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span>    <span class="s">&#34;net/http&#34;</span>
+    <span class="s">&#34;os&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span><span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">addr</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="s">&#34;:4000&#34;</span><span class="p">,</span> <span class="s">&#34;HTTP network address&#34;</span><span class="p">)</span>
+    <span class="nx">flag</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="c1">// Use the slog.New() function to initialize a new structured logger, which
+</span><span class="c1"></span>    <span class="c1">// writes to the standard out stream and uses the default settings.
+</span><span class="c1"></span>    <span class="nx">logger</span> <span class="o">:=</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">slog</span><span class="p">.</span><span class="nf">NewTextHandler</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span><span class="p">)</span>
+
+    <span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">fileServer</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">FileServer</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">Dir</span><span class="p">(</span><span class="s">&#34;./ui/static/&#34;</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /static/&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nf">StripPrefix</span><span class="p">(</span><span class="s">&#34;/static&#34;</span><span class="p">,</span> <span class="nx">fileServer</span><span class="p">)</span><span class="p">)</span>
+
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /{$}&#34;</span><span class="p">,</span> <span class="nx">home</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /snippet/view/{id}&#34;</span><span class="p">,</span> <span class="nx">snippetView</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /snippet/create&#34;</span><span class="p">,</span> <span class="nx">snippetCreate</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;POST /snippet/create&#34;</span><span class="p">,</span> <span class="nx">snippetCreatePost</span><span class="p">)</span>
+
+    <span class="c1">// Use the Info() method to log the starting server message at Info severity
+</span><span class="c1"></span>    <span class="c1">// (along with the listen address as an attribute).
+</span><span class="c1"></span>    <span class="nx">logger</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">&#34;starting server&#34;</span><span class="p">,</span> <span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="o">*</span><span class="nx">addr</span><span class="p">)</span>
+
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="o">*</span><span class="nx">addr</span><span class="p">,</span> <span class="nx">mux</span><span class="p">)</span>
+    <span class="c1">// And we also use the Error() method to log any error message returned by
+</span><span class="c1"></span>    <span class="c1">// http.ListenAndServe() at Error severity (with no additional attributes),
+</span><span class="c1"></span>    <span class="c1">// and then call os.Exit(1) to terminate the application with exit code 1.
+</span><span class="c1"></span>    <span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<aside class="important"><p>
+<strong>Important:</strong> There is no structured logging equivalent to the <code>log.Fatal()</code> function that we can use to handle an error returned by <code>http.ListenAndServe()</code>. Instead, the closest we can get is logging a message at the <code>Error</code> severity level and then manually calling <code>os.Exit(1)</code> to terminate the application with the <a href="https://tldp.org/LDP/abs/html/exitcodes.html">exit code 1</a>, like we are in the code above.
+</p></aside>
+
+<p>Alright&hellip; let&rsquo;s try this out!</p>
+
+<p>Go ahead and run the application, then open <em>another</em> terminal window and try to run it a second time. This should generate an error because the network address our server wants to listen on (<code>&quot;:4000&quot;</code>) is already in use.</p>
+
+<p>The log output in your second terminal should look a bit like this:</p>
+
+<figure class="code bash">
+<pre>$ go run ./cmd/web
+<samp>time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;starting server&#34; addr=:4000
+time=2024-03-18T11:29:23.000+00:00 level=ERROR msg=&#34;listen tcp :4000: bind: address already in use&#34;
+exit status 1</samp></pre>
+</figure>
+
+<p>This is looking pretty good. We can see that the two log entries contain different information, but are formatted in the same overall way.</p>
+
+<p>The first log entry has the severity <code>level=INFO</code> and message <code>msg=&quot;starting server&quot;</code>, along with the additional <code>addr=:4000</code> attribute. In contrast, we see that the second log entry has the severity <code>level=ERROR</code>, the <code>msg</code> value contains the content of the error message, and there are no additional attributes.</p>
+
+<hr />
+
+<h3 id="additional-information">Additional information</h3>
+
+<h4 id="safer-attributes">Safer attributes</h4>
+
+<p>Let&rsquo;s say that you accidentally write some code where you forget to include either the key or value for an attribute. For example:</p>
+
+<figure class="code go">
+<pre><span class="nx">logger</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">&#34;starting server&#34;</span><span class="p">,</span> <span class="s">&#34;addr&#34;</span><span class="p">)</span> <span class="c1">// Oops, the value for &#34;addr&#34; is missing
+</span></pre>
+</figure>
+
+<p>When this happens, the log entry will still be written but the attribute will have the key <code>!BADKEY</code>, like so:</p>
+
+<figure class="code bash">
+<pre><samp>time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;starting server&#34; !BADKEY=addr</samp></pre>
+</figure>
+
+<p>To avoid this happening and catch any problems at compile-time, you can use the <a href="https://pkg.go.dev/log/slog#Any"><code>slog.Any()</code></a> function to create an attribute pair instead:</p>
+
+<figure class="code go">
+<pre><span class="nx">logger</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">&#34;starting server&#34;</span><span class="p">,</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">Any</span><span class="p">(</span><span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="s">&#34;:4000&#34;</span><span class="p">)</span><span class="p">)</span></pre>
+</figure>
+
+<p>Or you can go even further and introduce some additional type safety by using the <code>slog.String()</code>, <code>slog.Int()</code>, <code>slog.Bool()</code>, <code>slog.Time()</code> and <code>slog.Duration()</code> functions to create attributes with a specific type of value.</p>
+
+<figure class="code go">
+<pre><span class="nx">logger</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">&#34;starting server&#34;</span><span class="p">,</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="s">&#34;:4000&#34;</span><span class="p">)</span><span class="p">)</span></pre>
+</figure>
+
+<p>Whether you want to use these functions or not is up to you. The <code>log/slog</code> package is relatively new to Go (introduced in Go 1.21), and there isn&rsquo;t much in the way of established best-practices or conventions around using it yet. But the trade-off is straightforward&hellip; using functions like <code>slog.String()</code> to create attributes is more verbose, but safer in sense that it reduces the risk of bugs in your application.</p>
+
+<h4 id="json-formatted-logs">JSON formatted logs</h4>
+
+<p>The <code>slog.NewTextHandler()</code> function that we&rsquo;ve used in this chapter creates a handler that writes plaintext log entries. But it&rsquo;s possible to create a handler that writes log entries as <em>JSON objects</em> instead using the <a href="https://pkg.go.dev/log/slog#NewJSONHandler"><code>slog.NewJSONHandler()</code></a> function. Like so:</p>
+
+<figure class="code go">
+<pre><span class="nx">logger</span> <span class="o">:=</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">slog</span><span class="p">.</span><span class="nf">NewJSONHandler</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span><span class="p">)</span></pre>
+</figure>
+
+<p>When using the JSON handler, the log output will look similar to this:</p>
+
+<figure class="code bash">
+<pre><samp>{&#34;time&#34;:&#34;2024-03-18T11:29:23.00000000+00:00&#34;,&#34;level&#34;:&#34;INFO&#34;,&#34;msg&#34;:&#34;starting server&#34;,&#34;addr&#34;:&#34;:4000&#34;}
+{&#34;time&#34;:&#34;2024-03-18T11:29:23.00000000+00:00&#34;,&#34;level&#34;:&#34;ERROR&#34;,&#34;msg&#34;:&#34;listen tcp :4000: bind: address already in use&#34;}</samp></pre>
+</figure>
+
+<h4 id="minimum-log-level">Minimum log level</h4>
+
+<p>As we’ve mentioned a couple of times, the <code>log/slog</code> package supports four severity levels: <code>Debug</code>, <code>Info</code>, <code>Warn</code> and <code>Error</code> <em>in that order</em>. <code>Debug</code> is the least severe level, and <code>Error</code> is the most severe.</p>
+
+<p>By default, the minimum log level for a structured logger is <code>Info</code>. That means that any log entries with a severity <em>less</em> than <code>Info</code>  &mdash; i.e. <code>Debug</code> level entries &mdash; will be silently discarded.</p>
+
+<p>You can use the <code>slog.HandlerOptions</code> struct to override this and set the minimum level to <code>Debug</code> (or any other level) if you want:</p>
+
+<figure class="code go">
+<pre><span class="nx">logger</span> <span class="o">:=</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">slog</span><span class="p">.</span><span class="nf">NewTextHandler</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">slog</span><span class="p">.</span><span class="nx">HandlerOptions</span><span class="p">{</span>
+    <span class="nx">Level</span><span class="p">:</span> <span class="nx">slog</span><span class="p">.</span><span class="nx">LevelDebug</span><span class="p">,</span>
+<span class="p">}</span><span class="p">)</span><span class="p">)</span></pre>
+</figure>
+
+<h4 id="caller-location">Caller location</h4>
+
+<p>You can also customize the handler so that it includes the filename and line number of the calling source code in the log entries, like so:</p>
+
+<figure class="code go">
+<pre><span class="nx">logger</span> <span class="o">:=</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">slog</span><span class="p">.</span><span class="nf">NewTextHandler</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">slog</span><span class="p">.</span><span class="nx">HandlerOptions</span><span class="p">{</span>
+    <span class="nx">AddSource</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+<span class="p">}</span><span class="p">)</span><span class="p">)</span></pre>
+</figure>
+
+<p>The log entries will look similar to this, with the caller location recorded under the <code>source</code> key:</p>
+
+<figure class="code bash">
+<pre><samp>time=2024-03-18T11:29:23.000+00:00 level=INFO source=/home/alex/code/snippetbox/cmd/web/main.go:32 msg=&#34;starting server&#34; addr=:4000</samp></pre>
+</figure>
+
+<h4 id="decoupled-logging">Decoupled logging</h4>
+
+<p>In this chapter we&rsquo;ve set up our structured logger to write entries to <code>os.Stdout</code> &mdash; the standard out stream.</p>
+
+<p>The big benefit of writing log entries to <code>os.Stdout</code> is that your application and logging are decoupled. Your application itself isn&rsquo;t concerned with the routing or storage of the logs, and that can make it easier to manage the logs differently depending on the environment.</p>
+
+<p>During development, it&rsquo;s easy to view the log output because the standard out stream is displayed in the terminal.</p>
+
+<p>In staging or production environments, you can redirect the stream to a final destination for viewing and archival. This destination could be on-disk files, or a logging service such as Splunk. Either way, the final destination of the logs can be managed by your execution environment independently of the application.</p>
+
+<p>For example, we could redirect the standard out stream to a on-disk file when starting the application like so:</p>
+
+<figure class="code bash">
+<pre>$ go run ./cmd/web &gt;&gt;/tmp/web.log</pre>
+</figure>
+
+<aside class="note"><p>
+<strong>Note:</strong> Using the double arrow <code>&gt;&gt;</code> will append to an existing file, instead of truncating it when starting the application.
+</p></aside>
+
+<h4 id="concurrent-logging">Concurrent logging</h4>
+
+<p>Custom loggers created by <code>slog.New()</code> are concurrency-safe. You can share a single logger and use it across multiple goroutines and in your HTTP handlers without needing to worry about race conditions.</p>
+
+<p>That said, if you have <em>multiple</em> structured loggers writing to the same destination then you need to be careful and ensure that the destination&rsquo;s underlying <code>Write()</code> method is also safe for concurrent use.</p>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="03.01-managing-configuration-settings.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="03.03-dependency-injection.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "03.01-managing-configuration-settings.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "03.03-dependency-injection.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

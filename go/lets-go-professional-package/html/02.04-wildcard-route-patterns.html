@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>Wildcard route patterns &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="02.00-foundations.html">Foundations</a> &rsaquo; Wildcard route patterns</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="02.03-routing-requests.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="02.05-method-based-routing.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 2.4.</div>
+			<h2 id="wildcard-route-patterns">Wildcard route patterns</h2>
+
+<p>It&rsquo;s also possible to define route patterns that contain <em>wildcard segments</em>. You can use these to create more flexible routing rules, and also to pass variables to your Go application via a request URL. If you&rsquo;ve built web applications using frameworks in other languages before, the concepts in this chapter will probably feel familiar to you.</p>
+
+<p>Let&rsquo;s step away from our application build for a moment to explain how it works.</p>
+
+<p>Wildcard segments in a route pattern are denoted by an wildcard <em>identifier</em> inside <code>{}</code> brackets. Like this:</p>
+
+<figure class="code go">
+<pre><span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/products/{category}/item/{itemID}&#34;</span><span class="p">,</span> <span class="nx">exampleHandler</span><span class="p">)</span></pre>
+</figure>
+
+<p>In this example, the route pattern contains two wildcard segments. The first segment has the identifier <code>category</code> and the second has the identifier <code>itemID</code>.</p>
+
+<p>The matching rules for route patterns containing wildcard segments are the same as we saw in the previous chapter, with the additional rule that the request path can contain <em>any</em> non-empty value for the wildcard segments. So, for example, the following requests would all match the route we defined above:</p>
+
+<figure class="code plain">
+<pre>/products/hammocks/item/sku123456789
+/products/seasonal-plants/item/pdt-1234-wxyz
+/products/experimental_foods/item/quantum%20bananas</pre>
+</figure>
+
+<aside class="important"><p>
+<strong>Important:</strong> When defining a route pattern, each path segment (the bit between forward slash characters) can only contain one wildcard and the wildcard needs to fill the <em>whole</em> path segment. Patterns like <code>&quot;/products/c_{category}&quot;</code>, <code>/date/{y}-{m}-{d}</code> or <code>/{slug}.html</code> are not valid.
+</p></aside>
+
+<p>Inside your handler, you can retrieve the corresponding value for a wildcard segment using its identifier and the <a href="https://pkg.go.dev/net/http#Request.PathValue"><code>r.PathValue()</code></a> method. For example:</p>
+
+<figure class="code go">
+<pre><span class="kd">func</span> <span class="nf">exampleHandler</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">category</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">PathValue</span><span class="p">(</span><span class="s">&#34;category&#34;</span><span class="p">)</span>
+    <span class="nx">itemID</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">PathValue</span><span class="p">(</span><span class="s">&#34;itemID&#34;</span><span class="p">)</span>
+
+    <span class="o">...</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>The <code>r.PathValue()</code> method always returns a <code>string</code> value, and it&rsquo;s important to remember that this can be <em>any value</em> that the user includes in the URL &mdash; so you should validate or sanity check the value before doing anything important with it.</p>
+
+<h3 id="using-wildcard-segments-in-practice">Using wildcard segments in practice</h3>
+
+<p>OK, let&rsquo;s get back to our application and update it to include a new <code>{id}</code> wildcard segment in the <code>/snippet/view</code> route, so that our routes look like this:</p>
+
+<table>
+<thead>
+<tr>
+<th>Route pattern</th>
+<th>Handler</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>/{$}</td>
+<td>home</td>
+<td>Display the home page</td>
+</tr>
+
+<tr>
+<td><strong>/snippet/view/{id}</strong></td>
+<td><strong>snippetView</strong></td>
+<td><strong>Display a specific snippet</strong></td>
+</tr>
+
+<tr>
+<td>/snippet/create</td>
+<td>snippetCreate</td>
+<td>Display a form for creating a new snippet</td>
+</tr>
+</tbody>
+</table>
+<p>Open up your <code>main.go</code> file, and make this change like so:</p>
+
+<figure class="code go">
+<figcaption>File: main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/{$}&#34;</span><span class="p">,</span> <span class="nx">home</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/snippet/view/{id}&#34;</span><span class="p">,</span> <span class="nx">snippetView</span><span class="p">)</span>  <span class="c1">// Add the {id} wildcard segment
+</span><span class="c1"></span>    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/snippet/create&#34;</span><span class="p">,</span> <span class="nx">snippetCreate</span><span class="p">)</span>
+
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Print</span><span class="p">(</span><span class="s">&#34;starting server on :4000&#34;</span><span class="p">)</span>
+
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="s">&#34;:4000&#34;</span><span class="p">,</span> <span class="nx">mux</span><span class="p">)</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>Now let&rsquo;s head to our <code>snippetView</code> handler and update it to retrieve the <code>id</code> value from the request URL path. Later in the book, we&rsquo;ll use this <code>id</code> value to select a specific snippet from a database, but for now we&rsquo;ll just echo the <code>id</code> back to the user as part of the HTTP response.</p>
+
+<p>Because the <code>id</code> value is untrusted user input, we should validate it to make sure it&rsquo;s sane and sensible before we use it. For the purpose of our application we want to check that the <code>id</code> value contains a positive integer, which we can do by trying to convert the string value to an integer with the <a href="https://pkg.go.dev/strconv/#Atoi"><code>strconv.Atoi()</code></a> function and then checking that the value is greater than zero.</p>
+
+<p>Here&rsquo;s how:</p>
+
+<figure class="code go">
+<figcaption>File: main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;fmt&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span>    <span class="s">&#34;log&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
+    <span class="s">&#34;strconv&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span><span class="p">)</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">snippetView</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Extract the value of the id wildcard from the request using r.PathValue()
+</span><span class="c1"></span>    <span class="c1">// and try to convert it to an integer using the strconv.Atoi() function. If
+</span><span class="c1"></span>    <span class="c1">// it can&#39;t be converted to an integer, or the value is less than 1, we
+</span><span class="c1"></span>    <span class="c1">// return a 404 page not found response.
+</span><span class="c1"></span>    <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">strconv</span><span class="p">.</span><span class="nf">Atoi</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">PathValue</span><span class="p">(</span><span class="s">&#34;id&#34;</span><span class="p">)</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="o">||</span> <span class="nx">id</span> <span class="p">&lt;</span> <span class="mi">1</span> <span class="p">{</span>
+        <span class="nx">http</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Use the fmt.Sprintf() function to interpolate the id value with a
+</span><span class="c1"></span>    <span class="c1">// message, then write it as the HTTP response.
+</span><span class="c1"></span>    <span class="nx">msg</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Display a specific snippet with ID %d...&#34;</span><span class="p">,</span> <span class="nx">id</span><span class="p">)</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="nx">msg</span><span class="p">)</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>Save your changes, restart the application, then open your browser and try visiting a URL like <a href="http://localhost:4000/snippet/view/123"><code>http://localhost:4000/snippet/view/123</code></a>. You should see a response containing the echoed <code>id</code> wildcard value from the request URL, similar to this:</p>
+
+<figure class="img">
+<img src="assets/img/02.04-01.png" alt="02.04-01.png" />
+</figure>
+
+<p>You might also like to try visiting some URLs which have invalid values for the <code>id</code> wildcard, or no wildcard value at all. For instance:</p>
+
+<ul>
+<li><a href="http://localhost:4000/snippet/view/"><code>http://localhost:4000/snippet/view/</code></a></li>
+<li><a href="http://localhost:4000/snippet/view/-1"><code>http://localhost:4000/snippet/view/-1</code></a></li>
+<li><a href="http://localhost:4000/snippet/view/foo"><code>http://localhost:4000/snippet/view/foo</code></a></li>
+</ul>
+
+<p>For all these requests you should get a <code>404 page not found</code> response.</p>
+
+<hr />
+
+<h3 id="additional-information">Additional information</h3>
+
+<h4 id="precedence-and-conflicts">Precedence and conflicts</h4>
+
+<p>When defining route patterns with wildcard segments, it&rsquo;s possible that some of your patterns will &lsquo;overlap&rsquo;. For example, if you define routes with the patterns <code>&quot;/post/edit&quot;</code> and <code>&quot;/post/{id}&quot;</code> they overlap because an incoming HTTP request with the path <code>/post/edit</code> is a valid match for <em>both</em> patterns.</p>
+
+<p>When route patterns overlap, Go&rsquo;s servemux needs to decide which pattern takes precedent so it can dispatch the request to the appropriate handler.</p>
+
+<p>The rule for this is very neat and succinct: <em>the most specific route pattern wins</em>. Formally, Go defines a pattern as more specific than another if it matches only a subset of requests that the other pattern matches.</p>
+
+<p>Continuing with the example above, the route pattern <code>&quot;/post/edit&quot;</code> <em>only</em> matches requests with the exact path <code>/post/edit</code>, whereas the pattern <code>&quot;/post/{id}&quot;</code> matches requests with the path <code>/post/edit</code>, <code>/post/123</code>, <code>/post/abc</code> and many more. Therefore <code>&quot;/post/edit&quot;</code> is the more specific route pattern and will take precedent.</p>
+
+<p>While we&rsquo;re on this topic, there are a few other things worth mentioning:</p>
+
+<ul>
+<li><p>A nice side-effect of the <em>most specific pattern wins</em> rule is that you can register patterns in any order <em>and it won’t change how the servemux behaves</em>.</p></li>
+
+<li><p>There is a potential edge case where you have two overlapping route patterns but neither one is obviously more specific than the other. For example, the patterns <code>&quot;/post/new/{id}&quot;</code> and <code>&quot;/post/{author}/latest&quot;</code> overlap because they both match the request path <code>/post/new/latest</code>, but it&rsquo;s not clear which one should take precedence. In this scenario, Go&rsquo;s servemux considers the patterns to <em>conflict</em>, and will panic at runtime when initializing the routes.</p></li>
+
+<li><p>Just because Go&rsquo;s servemux supports overlapping routes, it doesn&rsquo;t mean that you should use them! Having overlapping route patterns increases the risk of bugs and unintended behavior in your application, and if you have the freedom to design the URL structure for your application it&rsquo;s generally good practice to keep overlaps to a minimum or avoid them completely.</p></li>
+</ul>
+
+<h4 id="subtree-path-patterns-with-wildcards">Subtree path patterns with wildcards</h4>
+
+<p>It&rsquo;s important to understand that the routing rules we described in the previous chapter still apply, even when you&rsquo;re using wildcard segments. In particular, if your route pattern ends in a trailing slash and has no <code>{$}</code> at the end, then it is treated as a <em>subtree path pattern</em> and it only requires the <em>start</em> of a request URL path to match.</p>
+
+<p>So, if you have a subtree path pattern like <code>&quot;/user/{id}/&quot;</code> in your routes (note the trailing slash), this pattern will match requests like <code>/user/1/</code>, <code>/user/2/a</code>, <code>/user/2/a/b/c</code> and so on.</p>
+
+<p>Again, if you don&rsquo;t want that behavior, stick a <code>{$}</code> at the end &mdash; like <code>&quot;/user/{id}/{$}&quot;</code>.</p>
+
+<h4 id="remainder-wildcards">Remainder wildcards</h4>
+
+<p>Wildcards in route patterns normally match a single, non-empty, segment of the request path only. But there is one special case.</p>
+
+<p>If a route pattern ends with a wildcard, and this final wildcard identifier ends in <code>...</code>, then the wildcard will match any and all remaining segments of a request path.</p>
+
+<p>For example, if you declare a route pattern like <code>&quot;/post/{path...}&quot;</code> it will match requests like <code>/post/a</code>, <code>/post/a/b</code>, <code>/post/a/b/c</code> and so on &mdash; very much like a subtree path pattern does. But the difference is that you can access the entire wildcard part via the <code>r.PathValue()</code> method in your handlers. In this example, you could get the wildcard value for <code>{path...}</code> by calling <code>r.PathValue(&quot;path&quot;)</code>.</p>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="02.03-routing-requests.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="02.05-method-based-routing.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "02.03-routing-requests.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "02.05-method-based-routing.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>Designing a database model &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="04.00-database-driven-responses.html">Database-driven responses</a> &rsaquo; Designing a database model</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="04.04-creating-a-database-connection-pool.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="04.06-executing-sql-statements.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 4.5.</div>
+			<h2 id="designing-a-database-model">Designing a database model</h2>
+
+<p>In this chapter we&rsquo;re going to sketch out a database model for our project.</p>
+
+<p>If you don&rsquo;t like the term <em>model</em>, you might want to think of it as a <em>service layer</em> or <em>data access layer</em> instead. Whatever you prefer to call it, the idea is that we will encapsulate the code for working with MySQL in a separate package to the rest of our application.</p>
+
+<p>For now, we&rsquo;ll create a skeleton database model and have it return a bit of dummy data. It won&rsquo;t do much, but I&rsquo;d like to explain the pattern before we get into the nitty-gritty of SQL queries.</p>
+
+<p>Sound OK? Then let&rsquo;s go ahead and create a new <code>internal/models</code> directory containing a <code>snippets.go</code> file:</p>
+
+<figure class="code bash">
+<pre>$ mkdir -p internal/models
+$ touch internal/models/snippets.go</pre>
+</figure>
+
+<figure class="img">
+<img src="assets/img/04.05-01.png" alt="04.05-01.png" />
+</figure>
+
+<aside class="hint"><p>
+<strong>Remember:</strong> The <code>internal</code> directory is being used to hold ancillary non-application-specific code, which could potentially be reused. A database model which could be used by other applications in the future (like a <em>command line interface</em> application) fits the bill here.
+</p></aside>
+
+<p>Let&rsquo;s open the <code>internal/models/snippets.go</code> file and add a new <code>Snippet</code> struct to represent the data for an individual snippet, along with a <code>SnippetModel</code> type with methods on it to access and manipulate the snippets in our database. Like so:</p>
+
+<figure class="code go">
+<figcaption>File: internal/models/snippets.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">models</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;database/sql&#34;</span>
+    <span class="s">&#34;time&#34;</span>
+<span class="p">)</span>
+
+<span class="c1">// Define a Snippet type to hold the data for an individual snippet. Notice how
+</span><span class="c1"></span><span class="c1">// the fields of the struct correspond to the fields in our MySQL snippets
+</span><span class="c1"></span><span class="c1">// table?
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">Snippet</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">ID</span>      <span class="kt">int</span>
+    <span class="nx">Title</span>   <span class="kt">string</span>
+    <span class="nx">Content</span> <span class="kt">string</span>
+    <span class="nx">Created</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Time</span>
+    <span class="nx">Expires</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Time</span>
+<span class="p">}</span>
+
+<span class="c1">// Define a SnippetModel type which wraps a sql.DB connection pool.
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">SnippetModel</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">DB</span> <span class="o">*</span><span class="nx">sql</span><span class="p">.</span><span class="nx">DB</span>
+<span class="p">}</span>
+
+<span class="c1">// This will insert a new snippet into the database.
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">SnippetModel</span><span class="p">)</span> <span class="nf">Insert</span><span class="p">(</span><span class="nx">title</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">content</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">expires</span> <span class="kt">int</span><span class="p">)</span> <span class="p">(</span><span class="kt">int</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">nil</span>
+<span class="p">}</span>
+
+<span class="c1">// This will return a specific snippet based on its id.
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">SnippetModel</span><span class="p">)</span> <span class="nf">Get</span><span class="p">(</span><span class="nx">id</span> <span class="kt">int</span><span class="p">)</span> <span class="p">(</span><span class="nx">Snippet</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">Snippet</span><span class="p">{</span><span class="p">}</span><span class="p">,</span> <span class="kc">nil</span>
+<span class="p">}</span>
+
+<span class="c1">// This will return the 10 most recently created snippets.
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">SnippetModel</span><span class="p">)</span> <span class="nf">Latest</span><span class="p">(</span><span class="p">)</span> <span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nx">Snippet</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="kc">nil</span>
+<span class="p">}</span></pre>
+</figure>
+
+<h3 id="using-the-snippetmodel">Using the SnippetModel</h3>
+
+<p>To use this model in our handlers we need to establish a new <code>SnippetModel</code> struct in our <code>main()</code> function and then inject it as a dependency via the <code>application</code> struct &mdash; just like we have with our other dependencies.</p>
+
+<p>Here&rsquo;s how:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;database/sql&#34;</span>
+    <span class="s">&#34;flag&#34;</span>
+    <span class="s">&#34;log/slog&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
+    <span class="s">&#34;os&#34;</span>
+
+    <span class="c1">// Import the models package that we just created. You need to prefix this with
+</span><span class="c1"></span>    <span class="c1">// whatever module path you set up back in chapter 02.01 (Project Setup and Creating
+</span><span class="c1"></span>    <span class="c1">// a Module) so that the import statement looks like this:
+</span><span class="c1"></span>    <span class="c1">// &#34;{your-module-path}/internal/models&#34;. If you can&#39;t remember what module path you 
+</span><span class="c1"></span>    <span class="c1">// used, you can find it at the top of the go.mod file.
+</span><span class="c1"></span>    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span> 
+
+    <span class="nx">_</span> <span class="s">&#34;github.com/go-sql-driver/mysql&#34;</span>
+<span class="p">)</span>
+
+<span class="c1">// Add a snippets field to the application struct. This will allow us to
+</span><span class="c1"></span><span class="c1">// make the SnippetModel object available to our handlers.
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">application</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">logger</span>   <span class="o">*</span><span class="nx">slog</span><span class="p">.</span><span class="nx">Logger</span>
+    <span class="nx">snippets</span> <span class="o">*</span><span class="nx">models</span><span class="p">.</span><span class="nx">SnippetModel</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">addr</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="s">&#34;:4000&#34;</span><span class="p">,</span> <span class="s">&#34;HTTP network address&#34;</span><span class="p">)</span>
+    <span class="nx">dsn</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;dsn&#34;</span><span class="p">,</span> <span class="s">&#34;web:pass@/snippetbox?parseTime=true&#34;</span><span class="p">,</span> <span class="s">&#34;MySQL data source name&#34;</span><span class="p">)</span>
+    <span class="nx">flag</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">logger</span> <span class="o">:=</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">slog</span><span class="p">.</span><span class="nf">NewTextHandler</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span><span class="p">)</span>
+
+    <span class="nx">db</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">openDB</span><span class="p">(</span><span class="o">*</span><span class="nx">dsn</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+        <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">defer</span> <span class="nx">db</span><span class="p">.</span><span class="nf">Close</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="c1">// Initialize a models.SnippetModel instance containing the connection pool
+</span><span class="c1"></span>    <span class="c1">// and add it to the application dependencies.
+</span><span class="c1"></span>    <span class="nx">app</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">application</span><span class="p">{</span>
+        <span class="nx">logger</span><span class="p">:</span>   <span class="nx">logger</span><span class="p">,</span>
+        <span class="nx">snippets</span><span class="p">:</span> <span class="o">&amp;</span><span class="nx">models</span><span class="p">.</span><span class="nx">SnippetModel</span><span class="p">{</span><span class="nx">DB</span><span class="p">:</span> <span class="nx">db</span><span class="p">}</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="nx">logger</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">&#34;starting server&#34;</span><span class="p">,</span> <span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="o">*</span><span class="nx">addr</span><span class="p">)</span>
+
+    <span class="nx">err</span> <span class="p">=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="o">*</span><span class="nx">addr</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nf">routes</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<hr />
+
+<h3 id="additional-information">Additional information</h3>
+
+<h4 id="benefits-of-this-structure">Benefits of this structure</h4>
+
+<p>If you take a step back, you might be able to see a few benefits of setting up our project in this way:</p>
+
+<ul>
+<li><p>There&rsquo;s a clean separation of concerns. Our database logic won&rsquo;t be tied to our handlers, which means that handler responsibilities are limited to HTTP stuff (i.e. validating requests and writing responses). This will make it easier to write tight, focused, unit tests in the future.</p></li>
+
+<li><p>By creating a custom <code>SnippetModel</code> type and implementing methods on it we&rsquo;ve been able to make our model a single, neatly encapsulated object, which we can easily initialize and then pass to our handlers as a dependency. Again, this makes for easier to maintain, testable code.</p></li>
+
+<li><p>Because the model actions are defined as methods on an object &mdash; in our case <code>SnippetModel</code> &mdash; there&rsquo;s the opportunity to create an <em>interface</em> and mock it for unit testing purposes.</p></li>
+
+<li><p><em>And finally</em>, we have total control over which database is used at runtime, just by using the <code>-dsn</code> command-line flag.</p></li>
+</ul>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="04.04-creating-a-database-connection-pool.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="04.06-executing-sql-statements.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "04.04-creating-a-database-connection-pool.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "04.06-executing-sql-statements.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

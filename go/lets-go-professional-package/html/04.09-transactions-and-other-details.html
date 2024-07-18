@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>Transactions and other details &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="04.00-database-driven-responses.html">Database-driven responses</a> &rsaquo; Transactions and other details</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="04.08-multiple-record-sql-queries.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="05.00-dynamic-html-templates.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 4.9.</div>
+			<h2 id="transactions-and-other-details">Transactions and other details</h2>
+
+<h3 id="the-database-sql-package">The database/sql package</h3>
+
+<p>As you&rsquo;re probably starting to realize, the <code>database/sql</code> package essentially provides a standard interface between your Go application and the world of SQL databases.</p>
+
+<p>So long as you use the <code>database/sql</code> package, the Go code you write will generally be portable and will work with any kind of SQL database &mdash; whether it&rsquo;s MySQL, PostgreSQL, SQLite or something else. This means that your application isn&rsquo;t so tightly coupled to the database that you&rsquo;re currently using, and the theory is that you can swap databases in the future without re-writing all of your code (driver-specific quirks and SQL implementations aside).</p>
+
+<p>It&rsquo;s important to note that while <code>database/sql</code> generally does a good job of providing a standard interface for working with SQL databases, there <em>are</em> some idiosyncrasies in the way that different drivers and databases operate. It&rsquo;s always a good idea to read over the documentation for a new driver to understand any quirks and edge cases before you begin using it.</p>
+
+<h3 id="verbosity">Verbosity</h3>
+
+<p>If you&rsquo;re coming from Ruby, Python or PHP, the code for querying SQL databases may feel a bit verbose, especially if you&rsquo;re used to dealing with an abstraction layer or ORM.</p>
+
+<p>But the upside of the verbosity is that our code is non-magical; we can understand and control exactly what is going on. And with a bit of time, you&rsquo;ll find that the patterns for making SQL queries become familiar and you can copy-and-paste from previous work, or use developer tools like GitHub copilot to write the first draft of the code for you.</p>
+
+<p>If the verbosity really is starting to grate on you, you might want to consider trying the <a href="https://github.com/jmoiron/sqlx"><code>jmoiron/sqlx</code></a> package. It&rsquo;s well designed and provides some good extensions that make working with SQL queries quicker and easier. Another, newer, option you may want to consider is the <a href="https://github.com/blockloop/scan"><code>blockloop/scan</code></a> package.</p>
+
+<h3 id="managing-null-values">Managing null values</h3>
+
+<p>One thing that Go doesn&rsquo;t do very well is managing <code>NULL</code> values in database records.</p>
+
+<p>Let&rsquo;s pretend that the <code>title</code> column in our <code>snippets</code> table contains a <code>NULL</code> value in a particular row. If we queried that row, then <code>rows.Scan()</code> would return the following error because it can&rsquo;t convert <code>NULL</code> into a string:</p>
+
+<figure class="code bash">
+<pre><samp>sql: Scan error on column index 1: unsupported Scan, storing driver.Value type
+&amp;lt;nil&amp;gt; into type *string</samp></pre>
+</figure>
+
+<p>Very roughly, the fix for this is to change the field that you&rsquo;re scanning into from a <code>string</code> to a <code>sql.NullString</code> type. See <a href="https://gist.github.com/alexedwards/dc3145c8e2e6d2fd6cd9">this gist</a> for a working example.</p>
+
+<p>But, as a rule, the easiest thing to do is simply avoid <code>NULL</code> values altogether. Set <code>NOT NULL</code> constraints on all your database columns, like we have done in this book, along with sensible <code>DEFAULT</code> values as necessary.</p>
+
+<h3 id="working-with-transactions">Working with transactions</h3>
+
+<p>It&rsquo;s important to realize that calls to <code>Exec()</code>, <code>Query()</code> and <code>QueryRow()</code> can use <em>any connection from the <code>sql.DB</code> pool</em>. Even if you have two calls to <code>Exec()</code> immediately next to each other in your code, there is no guarantee that they will use the same database connection.</p>
+
+<p>Sometimes this isn&rsquo;t acceptable. For instance, if you lock a table with MySQL&rsquo;s <code>LOCK TABLES</code> command you must call <code>UNLOCK TABLES</code> on exactly the same connection to avoid a deadlock.</p>
+
+<p>To guarantee that the same connection is used you can wrap multiple statements in a <dfn>transaction</dfn>. Here&rsquo;s the basic pattern:</p>
+
+<figure class="code go">
+<pre><span class="kd">type</span> <span class="nx">ExampleModel</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">DB</span> <span class="o">*</span><span class="nx">sql</span><span class="p">.</span><span class="nx">DB</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">ExampleModel</span><span class="p">)</span> <span class="nf">ExampleTransaction</span><span class="p">(</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+    <span class="c1">// Calling the Begin() method on the connection pool creates a new sql.Tx
+</span><span class="c1"></span>    <span class="c1">// object, which represents the in-progress database transaction.
+</span><span class="c1"></span>    <span class="nx">tx</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">m</span><span class="p">.</span><span class="nx">DB</span><span class="p">.</span><span class="nf">Begin</span><span class="p">(</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">err</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Defer a call to tx.Rollback() to ensure it is always called before the 
+</span><span class="c1"></span>    <span class="c1">// function returns. If the transaction succeeds it will be already be 
+</span><span class="c1"></span>    <span class="c1">// committed by the time tx.Rollback() is called, making tx.Rollback() a 
+</span><span class="c1"></span>    <span class="c1">// no-op. Otherwise, in the event of an error, tx.Rollback() will rollback 
+</span><span class="c1"></span>    <span class="c1">// the changes before the function returns.
+</span><span class="c1"></span>    <span class="k">defer</span> <span class="nx">tx</span><span class="p">.</span><span class="nf">Rollback</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="c1">// Call Exec() on the transaction, passing in your statement and any
+</span><span class="c1"></span>    <span class="c1">// parameters. It&#39;s important to notice that tx.Exec() is called on the
+</span><span class="c1"></span>    <span class="c1">// transaction object just created, NOT the connection pool. Although we&#39;re
+</span><span class="c1"></span>    <span class="c1">// using tx.Exec() here you can also use tx.Query() and tx.QueryRow() in
+</span><span class="c1"></span>    <span class="c1">// exactly the same way.
+</span><span class="c1"></span>    <span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">tx</span><span class="p">.</span><span class="nf">Exec</span><span class="p">(</span><span class="s">&#34;INSERT INTO ...&#34;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">err</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Carry out another transaction in exactly the same way.
+</span><span class="c1"></span>    <span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">tx</span><span class="p">.</span><span class="nf">Exec</span><span class="p">(</span><span class="s">&#34;UPDATE ...&#34;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">err</span>
+    <span class="p">}</span>
+
+    <span class="c1">// If there are no errors, the statements in the transaction can be committed
+</span><span class="c1"></span>    <span class="c1">// to the database with the tx.Commit() method. 
+</span><span class="c1"></span>    <span class="nx">err</span> <span class="p">=</span> <span class="nx">tx</span><span class="p">.</span><span class="nf">Commit</span><span class="p">(</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nx">err</span>
+<span class="p">}</span></pre>
+</figure>
+
+<aside class="important"><p>
+<strong>Important:</strong> You must <em>always</em> call either <code>Rollback()</code> or <code>Commit()</code> before your function returns. If you don&rsquo;t the connection will stay open and not be returned to the connection pool. This can lead to hitting your maximum connection limit/running out of resources. The simplest way to avoid this is to use <code>defer tx.Rollback()</code> like we are in the example above.
+</p></aside>
+
+<p>Transactions are also super-useful if you want to execute multiple SQL statements as a
+<em>single atomic action</em>. So long as you use the <a href="https://pkg.go.dev/database/sql/#Tx.Rollback"><code>tx.Rollback()</code></a> method in the event of any errors, the transaction ensures that either:</p>
+
+<ul>
+<li><em>All</em> statements are executed successfully; or</li>
+<li><em>No</em> statements are executed and the database remains unchanged.</li>
+</ul>
+
+<h3 id="prepared-statements">Prepared statements</h3>
+
+<p>As I mentioned earlier, the <code>Exec()</code>, <code>Query()</code> and <code>QueryRow()</code> methods all use prepared statements behind the scenes to help prevent SQL injection attacks. They set up a prepared statement on the database connection, run it with the parameters provided, and then close the prepared statement.</p>
+
+<p>This might feel rather inefficient because we are creating and recreating the same prepared statements every single time.</p>
+
+<p>In theory, a better approach could be to make use of the <a href="https://pkg.go.dev/database/sql/#DB.Prepare"><code>DB.Prepare()</code></a> method to create our own prepared statement once, and reuse that instead. This is particularly true for complex SQL statements (e.g. those which have multiple JOINS) <em>and</em> are repeated very often (e.g. a bulk insert of tens of thousands of records). In these instances, the cost of re-preparing statements may have a noticeable effect on run time.</p>
+
+<p>Here&rsquo;s the basic pattern for using your own prepared statement in a web application:</p>
+
+<figure class="code go">
+<pre>
+<span class="c1">// We need somewhere to store the prepared statement for the lifetime of our
+</span><span class="c1"></span><span class="c1">// web application. A neat way is to embed it in the model alongside the 
+</span><span class="c1"></span><span class="c1">// connection pool.
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">ExampleModel</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">DB</span>         <span class="o">*</span><span class="nx">sql</span><span class="p">.</span><span class="nx">DB</span>
+    <span class="nx">InsertStmt</span> <span class="o">*</span><span class="nx">sql</span><span class="p">.</span><span class="nx">Stmt</span>
+<span class="p">}</span>
+
+<span class="c1">// Create a constructor for the model, in which we set up the prepared
+</span><span class="c1"></span><span class="c1">// statement.
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">NewExampleModel</span><span class="p">(</span><span class="nx">db</span> <span class="o">*</span><span class="nx">sql</span><span class="p">.</span><span class="nx">DB</span><span class="p">)</span> <span class="p">(</span><span class="o">*</span><span class="nx">ExampleModel</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Use the Prepare method to create a new prepared statement for the
+</span><span class="c1"></span>    <span class="c1">// current connection pool. This returns a sql.Stmt object which represents
+</span><span class="c1"></span>    <span class="c1">// the prepared statement.
+</span><span class="c1"></span>    <span class="nx">insertStmt</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">db</span><span class="p">.</span><span class="nf">Prepare</span><span class="p">(</span><span class="s">&#34;INSERT INTO ...&#34;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Store it in our ExampleModel struct, alongside the connection pool.
+</span><span class="c1"></span>    <span class="k">return</span> <span class="o">&amp;</span><span class="nx">ExampleModel</span><span class="p">{</span><span class="nx">DB</span><span class="p">:</span> <span class="nx">db</span><span class="p">,</span> <span class="nx">InsertStmt</span><span class="p">:</span> <span class="nx">insertStmt</span><span class="p">}</span><span class="p">,</span> <span class="kc">nil</span>
+<span class="p">}</span>
+
+<span class="c1">// Any methods implemented against the ExampleModel struct will have access to
+</span><span class="c1"></span><span class="c1">// the prepared statement.
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">ExampleModel</span><span class="p">)</span> <span class="nf">Insert</span><span class="p">(</span><span class="nx">args</span><span class="o">...</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+    <span class="c1">// We then need to call Exec directly against the prepared statement, rather
+</span><span class="c1"></span>    <span class="c1">// than against the connection pool. Prepared statements also support the
+</span><span class="c1"></span>    <span class="c1">// Query and QueryRow methods.
+</span><span class="c1"></span>    <span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">m</span><span class="p">.</span><span class="nx">InsertStmt</span><span class="p">.</span><span class="nf">Exec</span><span class="p">(</span><span class="nx">args</span><span class="o">...</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nx">err</span>
+<span class="p">}</span>
+
+<span class="c1">// In the web application&#39;s main function we will need to initialize a new
+</span><span class="c1"></span><span class="c1">// ExampleModel struct using the constructor function.
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">db</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">sql</span><span class="p">.</span><span class="nf">Open</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+        <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">defer</span> <span class="nx">db</span><span class="p">.</span><span class="nf">Close</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="c1">// Use the constructor function to create a new ExampleModel struct.
+</span><span class="c1"></span>    <span class="nx">exampleModel</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">NewExampleModel</span><span class="p">(</span><span class="nx">db</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+        <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Defer a call to Close() on the prepared statement to ensure that it is
+</span><span class="c1"></span>    <span class="c1">// properly closed before our main function terminates.
+</span><span class="c1"></span>    <span class="k">defer</span> <span class="nx">exampleModel</span><span class="p">.</span><span class="nx">InsertStmt</span><span class="p">.</span><span class="nf">Close</span><span class="p">(</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>There are a few things to be wary of though.</p>
+
+<p>Prepared statements exist on <em>database connections</em>. So, because Go uses a pool of <em>many database connections</em>, what actually happens is that the first time a prepared statement (i.e. the <code>sql.Stmt</code> object) is used it gets created on a particular database connection. The <code>sql.Stmt</code> object then remembers which connection in the pool was used. The next time, the <code>sql.Stmt</code> object will attempt to use the same database connection again. If that connection is closed or in use (i.e. not idle) the statement will be re-prepared on another connection.</p>
+
+<p>Under heavy load, it&rsquo;s possible that a large number of prepared statements will be created on multiple connections. This can lead to statements being prepared and re-prepared more often than you would expect &mdash; or even running into server-side limits on the number of statements (in MySQL the default maximum is 16,382 prepared statements).</p>
+
+<p>The code is also more complicated than not using prepared statements.</p>
+
+<p>So, there is a trade-off to be made between performance and complexity. As with anything, you should measure the actual performance benefit of implementing your own prepared statements to determine if it&rsquo;s worth doing. For most cases, I would suggest that using the regular <code>Query()</code>, <code>QueryRow()</code> and <code>Exec()</code> methods &mdash; without preparing statements yourself &mdash; is a reasonable starting point.</p>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="04.08-multiple-record-sql-queries.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="05.00-dynamic-html-templates.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "04.08-multiple-record-sql-queries.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "05.00-dynamic-html-templates.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

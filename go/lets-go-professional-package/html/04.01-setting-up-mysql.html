@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>Setting up MySQL &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="04.00-database-driven-responses.html">Database-driven responses</a> &rsaquo; Setting up MySQL</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="04.00-database-driven-responses.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="04.02-installing-a-database-driver.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 4.1.</div>
+			<h2 id="setting-up-mysql">Setting up MySQL</h2>
+
+<p>If you&rsquo;re following along, you&rsquo;ll need to install MySQL on your computer at this point. The official MySQL documentation contains comprehensive <a href="https://dev.mysql.com/doc/refman/8.0/en/installing.html">installation instructions</a> for all types of operating systems, but if you&rsquo;re using Mac OS you should be able to install it with:</p>
+
+<figure class="code bash">
+<pre>$ brew install mysql</pre>
+</figure>
+
+<p>Or if you&rsquo;re using a Linux distribution which supports <code>apt</code> (like Debian and Ubuntu) you can install it with:</p>
+
+<figure class="code bash">
+<pre>$ sudo apt install mysql-server</pre>
+</figure>
+
+<p>While you are installing MySQL you might be asked to set a password for the <code>root</code> user. Remember to keep a mental note of this if you are; you&rsquo;ll need it in the next step.</p>
+
+<h3 id="scaffolding-the-database">Scaffolding the database</h3>
+
+<p>Once MySQL is installed you should be able to connect to it from your terminal as the <code>root</code> user. The command to do this will vary depending on the version of MySQL that you&rsquo;ve got installed. For MySQL 5.7 and newer you should be able to connect by typing this:</p>
+
+<figure class="code bash">
+<pre>$ sudo mysql
+mysql&gt;</pre>
+</figure>
+
+<p>But if that doesn&rsquo;t work then try the following command instead, entering the   password that you set during the installation.</p>
+
+<figure class="code bash">
+<pre>$ mysql -u root -p
+Enter password:
+mysql&gt;</pre>
+</figure>
+
+<p>Once connected, the first thing we need to do is establish a <dfn>database</dfn> in MySQL to store all the data for our project. Copy and paste the following commands into the mysql prompt to create a new <code>snippetbox</code> database using UTF8 encoding.</p>
+
+<figure class="code sql">
+<pre><span class="c1">-- Create a new UTF-8 `snippetbox` database.
+</span><span class="c1"></span><span class="k">CREATE</span> <span class="k">DATABASE</span> <span class="n">snippetbox</span> <span class="nb">CHARACTER</span> <span class="k">SET</span> <span class="n">utf8mb4</span> <span class="k">COLLATE</span> <span class="n">utf8mb4_unicode_ci</span><span class="p">;</span>
+
+<span class="c1">-- Switch to using the `snippetbox` database.
+</span><span class="c1"></span><span class="n">USE</span> <span class="n">snippetbox</span><span class="p">;</span></pre>
+</figure>
+
+<p>Then copy and paste the following SQL statement to create a new <code>snippets</code> table to hold the text snippets for our application:</p>
+
+<figure class="code sql">
+<pre><span class="c1">-- Create a `snippets` table.
+</span><span class="c1"></span><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">snippets</span> <span class="p">(</span>
+    <span class="n">id</span> <span class="nb">INTEGER</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="n">AUTO_INCREMENT</span><span class="p">,</span>
+    <span class="n">title</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">content</span> <span class="nb">TEXT</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">created</span> <span class="n">DATETIME</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">expires</span> <span class="n">DATETIME</span> <span class="k">NOT</span> <span class="k">NULL</span>
+<span class="p">)</span><span class="p">;</span>
+
+<span class="c1">-- Add an index on the created column.
+</span><span class="c1"></span><span class="k">CREATE</span> <span class="k">INDEX</span> <span class="n">idx_snippets_created</span> <span class="k">ON</span> <span class="n">snippets</span><span class="p">(</span><span class="n">created</span><span class="p">)</span><span class="p">;</span></pre>
+</figure>
+
+<p>Each record in this table will have an integer <code>id</code> field which will act as the unique identifier for the text snippet. It will also have a short text <code>title</code> and the snippet content itself will be stored in the <code>content</code> field. We&rsquo;ll also keep some metadata about the times that the snippet was <code>created</code> and when it <code>expires</code>.</p>
+
+<p>Let&rsquo;s also add some placeholder entries to the <code>snippets</code> table (which we&rsquo;ll use in the next couple of chapters). I’ll use some short haiku as the content for the text snippets, but it really doesn’t matter what they contain.</p>
+
+<figure class="code sql">
+<pre><span class="c1">-- Add some dummy records (which we&#39;ll use in the next couple of chapters).
+</span><span class="c1"></span><span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">snippets</span> <span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">created</span><span class="p">,</span> <span class="n">expires</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span>
+    <span class="s1">&#39;</span><span class="s1">An old silent pond</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;</span><span class="s1">An old silent pond...\nA frog jumps into the pond,\nsplash! Silence again.\n\n– Matsuo Bashō</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="n">UTC_TIMESTAMP</span><span class="p">(</span><span class="p">)</span><span class="p">,</span>
+    <span class="n">DATE_ADD</span><span class="p">(</span><span class="n">UTC_TIMESTAMP</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="nb">INTERVAL</span> <span class="mi">365</span> <span class="k">DAY</span><span class="p">)</span>
+<span class="p">)</span><span class="p">;</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">snippets</span> <span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">created</span><span class="p">,</span> <span class="n">expires</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span>
+    <span class="s1">&#39;</span><span class="s1">Over the wintry forest</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;</span><span class="s1">Over the wintry\nforest, winds howl in rage\nwith no leaves to blow.\n\n– Natsume Soseki</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="n">UTC_TIMESTAMP</span><span class="p">(</span><span class="p">)</span><span class="p">,</span>
+    <span class="n">DATE_ADD</span><span class="p">(</span><span class="n">UTC_TIMESTAMP</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="nb">INTERVAL</span> <span class="mi">365</span> <span class="k">DAY</span><span class="p">)</span>
+<span class="p">)</span><span class="p">;</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">snippets</span> <span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">created</span><span class="p">,</span> <span class="n">expires</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span>
+    <span class="s1">&#39;</span><span class="s1">First autumn morning</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;</span><span class="s1">First autumn morning\nthe mirror I stare into\nshows my father</span><span class="s1">&#39;&#39;</span><span class="s1">s face.\n\n– Murakami Kijo</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="n">UTC_TIMESTAMP</span><span class="p">(</span><span class="p">)</span><span class="p">,</span>
+    <span class="n">DATE_ADD</span><span class="p">(</span><span class="n">UTC_TIMESTAMP</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="nb">INTERVAL</span> <span class="mi">7</span> <span class="k">DAY</span><span class="p">)</span>
+<span class="p">)</span><span class="p">;</span></pre>
+</figure>
+
+<h3 id="creating-a-new-user">Creating a new user</h3>
+
+<p>From a security point of view, it&rsquo;s not a good idea to connect to MySQL as the <code>root</code> user from a web application. Instead it&rsquo;s better to create a database user with restricted permissions on the database.</p>
+
+<p>So, while you&rsquo;re still connected to the MySQL prompt run the following commands to create a new <code>web</code> user with <code>SELECT</code> and <code>INSERT</code> privileges only on the database.</p>
+
+<figure class="code sql">
+<pre><span class="k">CREATE</span> <span class="k">USER</span> <span class="s1">&#39;</span><span class="s1">web</span><span class="s1">&#39;</span><span class="o">@</span><span class="s1">&#39;</span><span class="s1">localhost</span><span class="s1">&#39;</span><span class="p">;</span>
+<span class="k">GRANT</span> <span class="k">SELECT</span><span class="p">,</span> <span class="k">INSERT</span><span class="p">,</span> <span class="k">UPDATE</span><span class="p">,</span> <span class="k">DELETE</span> <span class="k">ON</span> <span class="n">snippetbox</span><span class="p">.</span><span class="o">*</span> <span class="k">TO</span> <span class="s1">&#39;</span><span class="s1">web</span><span class="s1">&#39;</span><span class="o">@</span><span class="s1">&#39;</span><span class="s1">localhost</span><span class="s1">&#39;</span><span class="p">;</span>
+<span class="c1">-- Important: Make sure to swap &#39;pass&#39; with a password of your own choosing.
+</span><span class="c1"></span><span class="k">ALTER</span> <span class="k">USER</span> <span class="s1">&#39;</span><span class="s1">web</span><span class="s1">&#39;</span><span class="o">@</span><span class="s1">&#39;</span><span class="s1">localhost</span><span class="s1">&#39;</span> <span class="n">IDENTIFIED</span> <span class="k">BY</span> <span class="s1">&#39;</span><span class="s1">pass</span><span class="s1">&#39;</span><span class="p">;</span></pre>
+</figure>
+
+<p>Once that&rsquo;s done type <code>exit</code> to leave the MySQL prompt.</p>
+
+<h3 id="test-the-new-user">Test the new user</h3>
+
+<p>You should now be able to connect to the <code>snippetbox</code> database as the <code>web</code> user using the following command. When prompted enter the password that you just set.</p>
+
+<figure class="code bash">
+<pre>$ mysql -D snippetbox -u web -p
+Enter password:
+mysql&gt;</pre>
+</figure>
+
+<p>If the permissions are working correctly you should find that you&rsquo;re able to perform <code>SELECT</code> and <code>INSERT</code> operations on the database correctly, but other commands such as <code>DROP TABLE</code> and <code>GRANT</code> will fail.</p>
+
+<figure class="code bash">
+<pre>mysql&gt; SELECT id, title, expires FROM snippets;
+<samp>+----+------------------------+---------------------+
+| id | title                  | expires             |
++----+------------------------+---------------------+
+|  1 | An old silent pond     | 2025-03-18 10:00:26 |
+|  2 | Over the wintry forest | 2025-03-18 10:00:26 |
+|  3 | First autumn morning   | 2024-03-25 10:00:26 |
++----+------------------------+---------------------+
+3 rows in set (0.00 sec)</samp>
+
+mysql&gt; DROP TABLE snippets;
+<samp>ERROR 1142 (42000): DROP command denied to user &#39;web&#39;@&#39;localhost&#39; for table &#39;snippets&#39;</samp></pre>
+</figure>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="04.00-database-driven-responses.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="04.02-installing-a-database-driver.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "04.00-database-driven-responses.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "04.02-installing-a-database-driver.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

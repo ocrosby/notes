@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>Customizing responses &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="02.00-foundations.html">Foundations</a> &rsaquo; Customizing responses</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="02.05-method-based-routing.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="02.07-project-structure-and-organization.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 2.6.</div>
+			<h2 id="customizing-responses">Customizing responses</h2>
+
+<p>By default, every response that your handlers send has the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status">HTTP status code</a> <code>200 OK</code> (which indicates to the user that their request was received and processed successfully), plus three automatic <em>system-generated</em> headers: a <code>Date</code> header, and the <code>Content-Length</code> and  <code>Content-Type</code> of the response body. For example:</p>
+
+<figure class="code bash">
+<pre>$ curl -i localhost:4000/
+<samp>HTTP/1.1 200 OK
+Date: Wed, 18 Mar 2024 11:29:23 GMT
+Content-Length: 21
+Content-Type: text/plain; charset=utf-8
+
+Hello from Snippetbox</samp></pre>
+</figure>
+
+<p>In this chapter we&rsquo;ll dive in to how to customize the response headers your handlers send, and also look at a couple of other ways that you can send plain text responses to users.</p>
+
+<h3 id="http-status-codes">HTTP status codes</h3>
+
+<p>First of all, let&rsquo;s update our <code>snippetCreatePost</code> handler so that it sends a <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/201"><code>201 Created</code></a> status code rather than <code>200 OK</code>.  To do this, you can use the <code>w.WriteHeader()</code> method in your handlers like so:</p>
+
+<figure class="code go">
+<figcaption>File: main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">snippetCreatePost</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Use the w.WriteHeader() method to send a 201 status code.
+</span><span class="c1"></span>    <span class="nx">w</span><span class="p">.</span><span class="nf">WriteHeader</span><span class="p">(</span><span class="mi">201</span><span class="p">)</span>
+
+    <span class="c1">// Then w.Write() method to write the response body as normal.
+</span><span class="c1"></span>    <span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&#34;Save a new snippet...&#34;</span><span class="p">)</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>(Yes, this is a bit silly because the handler isn&rsquo;t actually creating anything yet! But it nicely illustrates the pattern to set a custom status code.)</p>
+
+<p>Although this change looks straightforward, there are a couple of nuances I should explain:</p>
+
+<ul>
+<li><p>It&rsquo;s only possible to call <code>w.WriteHeader()</code> once per response, and after the status code has been written it can&rsquo;t be changed. If you try to call <code>w.WriteHeader()</code> a second time Go will log a warning message.</p></li>
+
+<li><p>If you don&rsquo;t call <code>w.WriteHeader()</code> explicitly, then the first call to <code>w.Write()</code> will automatically send a <code>200</code> status code to the user.  So, if you want to send a non-200 status code, you must call <code>w.WriteHeader()</code> <em>before</em> any call to <code>w.Write()</code>.</p></li>
+</ul>
+
+<p>Restart the server, then use curl to make a <code>POST</code> request to <code>http://localhost:4000/snippet/create</code> again. You should see that the HTTP response now has a <code>201 Created</code> status code similar to this:</p>
+
+<figure class="code bash">
+<pre>$ curl -i -d &#34;&#34; http://localhost:4000/snippet/create
+<samp>HTTP/1.1 201 Created
+Date: Wed, 18 Mar 2024 11:29:23 GMT
+Content-Length: 21
+Content-Type: text/plain; charset=utf-8
+
+Save a new snippet...</samp></pre>
+</figure>
+
+<h3 id="status-code-constants">Status code constants</h3>
+
+<p>The <code>net/http</code> package provides <a href="https://pkg.go.dev/net/http#pkg-constants">constants for HTTP status codes</a>, which we can use instead of writing the status code number ourselves. Using these constants is good practice because it helps prevent mistakes due to typos, and it can also help make your code clearer and self-documenting &mdash; especially when dealing with less-commonly-used status codes.</p>
+
+<p>Let&rsquo;s update our <code>snippetCreatePost</code> handler to use the constant <code>http.StatusCreated</code> instead of the integer <code>201</code>, like so:</p>
+
+<figure class="code go">
+<figcaption>File: main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">snippetCreatePost</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nf">WriteHeader</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">StatusCreated</span><span class="p">)</span>
+
+    <span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&#34;Save a new snippet...&#34;</span><span class="p">)</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<h3 id="customizing-headers">Customizing headers</h3>
+
+<p>You can also customize the HTTP headers sent to a user by changing the <em>response header map</em>. Probably the most common thing you&rsquo;ll want to do is include an additional header in the map, which you can do using the <code>w.Header().Add()</code> method.</p>
+
+<p>To demonstrate this, let&rsquo;s add a <code>Server: Go</code> header to the response that our <code>home</code> handler sends. If you&rsquo;re following along, go ahead and update the handler code like so:</p>
+
+<figure class="code go">
+<figcaption>File: main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">home</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Use the Header().Add() method to add a &#39;Server: Go&#39; header to the
+</span><span class="c1"></span>    <span class="c1">// response header map. The first parameter is the header name, and
+</span><span class="c1"></span>    <span class="c1">// the second parameter is the header value.
+</span><span class="c1"></span>    <span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">&#34;Server&#34;</span><span class="p">,</span> <span class="s">&#34;Go&#34;</span><span class="p">)</span>
+
+    <span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&#34;Hello from Snippetbox&#34;</span><span class="p">)</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<aside class="important"><p>
+<strong>Important:</strong> You must make sure that your response header map contains all the headers you want <em>before</em> you call <code>w.WriteHeader()</code> or <code>w.Write()</code>. Any changes you make to the response header map after calling <code>w.WriteHeader()</code> or <code>w.Write()</code> will have no effect on the headers that the user receives.
+</p></aside>
+
+<p>Let&rsquo;s try this out by using curl to make another request to <code>http://localhost:4000/</code>. This time you should see that the response now includes a new <code>Server: Go</code> header, like so:</p>
+
+<figure class="code bash">
+<pre>$ curl -i http://localhost:4000
+<samp>HTTP/1.1 200 OK
+Server: Go
+Date: Wed, 18 Mar 2024 11:29:23 GMT
+Content-Length: 21
+Content-Type: text/plain; charset=utf-8
+
+Hello from Snippetbox</samp></pre>
+</figure>
+
+<h3 id="writing-response-bodies">Writing response bodies</h3>
+
+<p>So far in this book we&rsquo;ve been using <code>w.Write()</code> to send specific  HTTP response bodies to a user. And while this is the simplest and most fundamental way to send a response, in practice it&rsquo;s far more common to pass your <code>http.ResponseWriter</code> value to <em>another function</em> that writes the response for you.</p>
+
+<p>In fact, there are a lot of functions that you can use to write a response!</p>
+
+<p>The key thing to understand is this&hellip; <em>because the <code>http.ResponseWriter</code> value in your handlers has a <code>Write()</code> method, it satisfies the <a href="https://pkg.go.dev/io#Writer"><code>io.Writer</code></a> interface</em>.</p>
+
+<p>If you&rsquo;re new to Go, then the <a href="https://www.alexedwards.net/blog/interfaces-explained">concept of interfaces</a> can be a bit confusing and I don&rsquo;t want to get too hung up on it right now. But at a practical level, it means that any functions where you see an <code>io.Writer</code> parameter, you can pass in your <code>http.ResponseWriter</code> value and whatever is being written will subsequently be sent as the body of the HTTP response.</p>
+
+<p>That means you can use standard library functions like <a href="https://pkg.go.dev/io#WriteString"><code>io.WriteString()</code></a> and the <a href="https://pkg.go.dev/fmt#Fprint"><code>fmt.Fprint*()</code></a> family (all of which accept an <code>io.Writer</code> parameter) to write plain-text response bodies too.</p>
+
+<figure class="code go">
+<pre><span class="c1">// Instead of this...
+</span><span class="c1"></span><span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&#34;Hello world&#34;</span><span class="p">)</span><span class="p">)</span>
+
+<span class="c1">// You can do this...
+</span><span class="c1"></span><span class="nx">io</span><span class="p">.</span><span class="nf">WriteString</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Hello world&#34;</span><span class="p">)</span>
+<span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprint</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Hello world&#34;</span><span class="p">)</span></pre>
+</figure>
+
+<p>Let&rsquo;s leverage this, and update the code in our <code>snippetView</code> handler to use the <code>fmt.Fprintf()</code> function. This will allow us to interpolate the wildcard <code>id</code> value in our response body message <em>and</em> write the response in a single line, like so:</p>
+
+<figure class="code go">
+<figcaption>File: main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">snippetView</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">strconv</span><span class="p">.</span><span class="nf">Atoi</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">PathValue</span><span class="p">(</span><span class="s">&#34;id&#34;</span><span class="p">)</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="o">||</span> <span class="nx">id</span> <span class="p">&lt;</span> <span class="mi">1</span> <span class="p">{</span>
+        <span class="nx">http</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintf</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Display a specific snippet with ID %d...&#34;</span><span class="p">,</span> <span class="nx">id</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<hr />
+
+<h3 id="additional-information">Additional information</h3>
+
+<h4 id="content-sniffing">Content sniffing</h4>
+
+<p>In order to automatically set the <code>Content-Type</code> header, Go <em>content sniffs</em> the response body with the <a href="https://pkg.go.dev/net/http/#DetectContentType"><code>http.DetectContentType()</code></a> function. If this function can&rsquo;t guess the content type, Go will fall back to setting the header <code>Content-Type: application/octet-stream</code> instead.</p>
+
+<p>The <code>http.DetectContentType()</code> function generally works quite well, but a common gotcha for web developers is that it can&rsquo;t distinguish JSON from plain text. So, by default, JSON responses will be sent with a <code>Content-Type: text/plain; charset=utf-8</code> header. You can prevent this from happening by setting the correct header manually in your handler like so:</p>
+
+<figure class="code go">
+<pre><span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Set</span><span class="p">(</span><span class="s">&#34;Content-Type&#34;</span><span class="p">,</span> <span class="s">&#34;application/json&#34;</span><span class="p">)</span>
+<span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">`</span><span class="s">{</span><span class="s">&#34;name&#34;:&#34;Alex&#34;}</span><span class="s">`</span><span class="p">)</span><span class="p">)</span></pre>
+</figure>
+
+<h4 id="manipulating-the-header-map">Manipulating the header map</h4>
+
+<p>In this chapter we used <code>w.Header().Add()</code> to add a new header to the response header map. But there are also <code>Set()</code>, <code>Del()</code>, <code>Get()</code> and <code>Values()</code> methods that you can use to manipulate and read from the header map too.</p>
+
+<figure class="code go">
+<pre><span class="c1">// Set a new cache-control header. If an existing &#34;Cache-Control&#34; header exists
+</span><span class="c1"></span><span class="c1">// it will be overwritten.
+</span><span class="c1"></span><span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Set</span><span class="p">(</span><span class="s">&#34;Cache-Control&#34;</span><span class="p">,</span> <span class="s">&#34;public, max-age=31536000&#34;</span><span class="p">)</span>
+
+<span class="c1">// In contrast, the Add() method appends a new &#34;Cache-Control&#34; header and can
+</span><span class="c1"></span><span class="c1">// be called multiple times.
+</span><span class="c1"></span><span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">&#34;Cache-Control&#34;</span><span class="p">,</span> <span class="s">&#34;public&#34;</span><span class="p">)</span>
+<span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">&#34;Cache-Control&#34;</span><span class="p">,</span> <span class="s">&#34;max-age=31536000&#34;</span><span class="p">)</span>
+
+<span class="c1">// Delete all values for the &#34;Cache-Control&#34; header.
+</span><span class="c1"></span><span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Del</span><span class="p">(</span><span class="s">&#34;Cache-Control&#34;</span><span class="p">)</span>
+
+<span class="c1">// Retrieve the first value for the &#34;Cache-Control&#34; header.
+</span><span class="c1"></span><span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;Cache-Control&#34;</span><span class="p">)</span>
+
+<span class="c1">// Retrieve a slice of all values for the &#34;Cache-Control&#34; header.
+</span><span class="c1"></span><span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Values</span><span class="p">(</span><span class="s">&#34;Cache-Control&#34;</span><span class="p">)</span></pre>
+</figure>
+
+<h4 id="header-canonicalization">Header canonicalization</h4>
+
+<p>When you&rsquo;re using the <code>Set()</code>, <code>Add()</code>, <code>Del()</code>, <code>Get()</code> and <code>Values()</code> methods on the header map, the header name will always be canonicalized using the <a href="https://pkg.go.dev/net/textproto/#CanonicalMIMEHeaderKey"><code>textproto.CanonicalMIMEHeaderKey()</code></a> function. This converts the first letter and any letter following a hyphen to upper case, and the rest of the letters to lowercase. This has the practical implication that when calling these methods the header name is <em>case-insensitive</em>.</p>
+
+<p>If you need to avoid this canonicalization behavior, you can edit the underlying header map directly. It has the type <code>map[string][]string</code> behind the scenes. For example:</p>
+
+<figure class="code go">
+<pre><span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">[</span><span class="s">&#34;X-XSS-Protection&#34;</span><span class="p">]</span> <span class="p">=</span> <span class="p">[</span><span class="p">]</span><span class="kt">string</span><span class="p">{</span><span class="s">&#34;1; mode=block&#34;</span><span class="p">}</span></pre>
+</figure>
+
+<aside class="note"><p>
+<strong>Note:</strong> If a HTTP/2 connection is being used, Go will <em>always</em> automatically convert the header names and values to lowercase for you when writing the response, as per <a href="https://tools.ietf.org/html/rfc7540#section-8.1.2">the HTTP/2 specifications</a>.
+</p></aside>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="02.05-method-based-routing.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="02.07-project-structure-and-organization.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "02.05-method-based-routing.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "02.07-project-structure-and-organization.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

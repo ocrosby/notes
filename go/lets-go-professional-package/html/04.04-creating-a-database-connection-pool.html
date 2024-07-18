@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>Creating a database connection pool &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="04.00-database-driven-responses.html">Database-driven responses</a> &rsaquo; Creating a database connection pool</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="04.03-modules-and-reproducible-builds.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="04.05-designing-a-database-model.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 4.4.</div>
+			<h2 id="creating-a-database-connection-pool">Creating a database connection pool</h2>
+
+<p>Now that the MySQL database is all set up and we&rsquo;ve got a driver installed, the natural next step is to connect to the database from our web application.</p>
+
+<p>To do this we need Go&rsquo;s <a href="https://pkg.go.dev/database/sql/#Open"><code>sql.Open()</code></a> function, which you use a bit like this:</p>
+
+<figure class="code go">
+<pre><span class="c1">// The sql.Open() function initializes a new sql.DB object, which is essentially a
+</span><span class="c1"></span><span class="c1">// pool of database connections.
+</span><span class="c1"></span><span class="nx">db</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">sql</span><span class="p">.</span><span class="nf">Open</span><span class="p">(</span><span class="s">&#34;mysql&#34;</span><span class="p">,</span> <span class="s">&#34;web:pass@/snippetbox?parseTime=true&#34;</span><span class="p">)</span>
+<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+    <span class="o">...</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>There are a few things about this code to explain and emphasize:</p>
+
+<ul>
+<li><p>The first parameter to <code>sql.Open()</code> is the <em>driver name</em> and the second parameter is the <em>data source name</em> (sometimes also called a <em>connection string</em> or <em>DSN</em>) which describes how to connect to your database.</p></li>
+
+<li><p>The format of the data source name will depend on which database and driver you&rsquo;re using. Typically, you can find information and examples in the documentation for your specific driver. For the driver we&rsquo;re using you can find that documentation <a href="https://github.com/go-sql-driver/mysql#dsn-data-source-name">here</a>.</p></li>
+
+<li><p>The <code>parseTime=true</code> part of the DSN above is a <em>driver-specific</em> parameter which instructs our driver to convert SQL <code>TIME</code> and <code>DATE</code> fields to Go <code>time.Time</code> objects.</p></li>
+
+<li><p>The <code>sql.Open()</code> function returns a <a href="https://pkg.go.dev/database/sql/#DB"><code>sql.DB</code></a> object. This isn&rsquo;t a database connection &mdash; it&rsquo;s a <em>pool of many connections</em>. This is an important difference to understand. Go manages the connections in this pool as needed, automatically opening and closing connections to the database via the driver.</p></li>
+
+<li><p>The connection pool is safe for concurrent access, so you can use it from web application handlers safely.</p></li>
+
+<li><p>The connection pool is intended to be long-lived. In a web application it&rsquo;s normal to initialize the connection pool in your <code>main()</code> function and then pass the pool to your handlers. You shouldn&rsquo;t call <code>sql.Open()</code> in a short-lived HTTP handler itself &mdash; it would be a waste of memory and network resources.</p></li>
+</ul>
+
+<h3 id="using-it-in-our-web-application">Using it in our web application</h3>
+
+<p>Let&rsquo;s look at how to use <code>sql.Open()</code> in practice. Open up your <code>main.go</code> file and add the following code:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;database/sql&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span>    <span class="s">&#34;flag&#34;</span>
+    <span class="s">&#34;log/slog&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
+    <span class="s">&#34;os&#34;</span>
+
+    <span class="nx">_</span> <span class="s">&#34;github.com/go-sql-driver/mysql&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span><span class="p">)</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">addr</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="s">&#34;:4000&#34;</span><span class="p">,</span> <span class="s">&#34;HTTP network address&#34;</span><span class="p">)</span>
+    <span class="c1">// Define a new command-line flag for the MySQL DSN string.
+</span><span class="c1"></span>    <span class="nx">dsn</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;dsn&#34;</span><span class="p">,</span> <span class="s">&#34;web:pass@/snippetbox?parseTime=true&#34;</span><span class="p">,</span> <span class="s">&#34;MySQL data source name&#34;</span><span class="p">)</span>
+    <span class="nx">flag</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">logger</span> <span class="o">:=</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">slog</span><span class="p">.</span><span class="nf">NewTextHandler</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span><span class="p">)</span>
+
+    <span class="c1">// To keep the main() function tidy I&#39;ve put the code for creating a connection
+</span><span class="c1"></span>    <span class="c1">// pool into the separate openDB() function below. We pass openDB() the DSN
+</span><span class="c1"></span>    <span class="c1">// from the command-line flag.
+</span><span class="c1"></span>    <span class="nx">db</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">openDB</span><span class="p">(</span><span class="o">*</span><span class="nx">dsn</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+        <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="c1">// We also defer a call to db.Close(), so that the connection pool is closed
+</span><span class="c1"></span>    <span class="c1">// before the main() function exits.
+</span><span class="c1"></span>    <span class="k">defer</span> <span class="nx">db</span><span class="p">.</span><span class="nf">Close</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">app</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">application</span><span class="p">{</span>
+        <span class="nx">logger</span><span class="p">:</span> <span class="nx">logger</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="nx">logger</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">&#34;starting server&#34;</span><span class="p">,</span> <span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="o">*</span><span class="nx">addr</span><span class="p">)</span>
+
+    <span class="c1">// Because the err variable is now already declared in the code above, we need
+</span><span class="c1"></span>    <span class="c1">// to use the assignment operator = here, instead of the := &#39;declare and assign&#39;
+</span><span class="c1"></span>    <span class="c1">// operator.
+</span><span class="c1"></span>    <span class="nx">err</span> <span class="p">=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="o">*</span><span class="nx">addr</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nf">routes</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c1">// The openDB() function wraps sql.Open() and returns a sql.DB connection pool
+</span><span class="c1"></span><span class="c1">// for a given DSN.
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">openDB</span><span class="p">(</span><span class="nx">dsn</span> <span class="kt">string</span><span class="p">)</span> <span class="p">(</span><span class="o">*</span><span class="nx">sql</span><span class="p">.</span><span class="nx">DB</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">db</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">sql</span><span class="p">.</span><span class="nf">Open</span><span class="p">(</span><span class="s">&#34;mysql&#34;</span><span class="p">,</span> <span class="nx">dsn</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+    <span class="p">}</span>
+
+    <span class="nx">err</span> <span class="p">=</span> <span class="nx">db</span><span class="p">.</span><span class="nf">Ping</span><span class="p">(</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">db</span><span class="p">.</span><span class="nf">Close</span><span class="p">(</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="nx">db</span><span class="p">,</span> <span class="kc">nil</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>There&rsquo;re a few things about this code which are interesting:</p>
+
+<ul>
+<li><p>Notice how the import path for our driver is prefixed with an underscore? This is because our <code>main.go</code> file doesn&rsquo;t actually use anything in the <code>mysql</code> package. So if we try to import it normally the Go compiler will raise an error. However, we need the driver&rsquo;s <code>init()</code> function to run so that it can register itself with the <code>database/sql</code> package. The trick to getting around this is to alias the package name to the blank identifier, like we are here. This is standard practice for most of Go&rsquo;s SQL drivers.</p></li>
+
+<li><p>The <code>sql.Open()</code> function doesn&rsquo;t actually create any connections, all it does is initialize the pool for future use. Actual connections to the database are established lazily, as and when needed for the first time. So to verify that everything is set up correctly we need to use the <a href="https://pkg.go.dev/database/sql/#DB.Ping"><code>db.Ping()</code></a> method to create a connection and check for any errors. If there is an error, we call <a href="https://pkg.go.dev/database/sql/#DB.Close"><code>db.Close()</code></a> to close the connection pool and return the error.</p></li>
+
+<li><p>Going back to the <code>main()</code> function, at this moment in time the call to <code>defer db.Close()</code> is a bit superfluous. Our application is only ever terminated by a signal interrupt (i.e. <code>Ctrl+C</code>) or by <code>os.Exit(1)</code>. In both of those cases, the program exits immediately and deferred functions are never run. But making sure to always close the connection pool is a good habit to get into, and it could be beneficial in the future if you add a graceful shutdown to your application.</p></li>
+</ul>
+
+<h3 id="testing-a-connection">Testing a connection</h3>
+
+<p>Make sure that the file is saved, and then try running the application. If everything has gone to plan, the connection pool should be established and the <code>db.Ping()</code> method should be able to create a connection without any errors. All being well, you should see the normal <em>starting server</em> log message like so:</p>
+
+<figure class="code bash">
+<pre>$ go run ./cmd/web
+<samp>time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;starting server&#34; addr=:4000</samp></pre>
+</figure>
+
+<p>If the application fails to start and you get an <code>&quot;Access denied...&quot;</code> error message like below, then the problem probably lies with your DSN. Double-check that the username and password are correct, that your database users have the right permissions, and that your MySQL instance is using standard settings.</p>
+
+<figure class="code bash">
+<pre>$ go run ./cmd/web
+<samp>time=2024-03-18T11:29:23.000+00:00 level=ERROR msg=&#34;Error 1045 (28000): Access denied for user &#39;web&#39;@&#39;localhost&#39; (using password: YES)&#34;
+exit status 1</samp></pre>
+</figure>
+
+<h3 id="tidying-the-go-mod-file">Tidying the go.mod file</h3>
+
+<p>Now that our code is actually importing the <code>github.com/go-sql-driver/mysql</code> driver, you can run the <code>go mod tidy</code> command to tidy your <code>go.mod</code> file and remove any unnecessary <code>// indirect</code> annotations.</p>
+
+<figure class="code bash">
+<pre>$ go mod tidy</pre>
+</figure>
+
+<p>Once you&rsquo;ve done that, your <code>go.mod</code> file should now look like below &mdash; with <code>github.com/go-sql-driver/mysql</code> listed as a direct dependency and <code>filippo.io/edwards25519</code> continuing to be an indirect dependency.</p>
+
+<figure class="code plain">
+<figcaption>File: go.mod</figcaption>
+<pre>module snippetbox.alexedwards.net
+
+go 1.22.0
+
+require github.com/go-sql-driver/mysql v1.8.0
+
+require filippo.io/edwards25519 v1.1.0 // indirect</pre>
+</figure>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="04.03-modules-and-reproducible-builds.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="04.05-designing-a-database-model.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "04.03-modules-and-reproducible-builds.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "04.05-designing-a-database-model.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+
