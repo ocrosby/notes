@@ -20,3 +20,14 @@ Compiler Flags
 ## References
 
 - [Stack or Heap](https://golang.org/doc/faq#stack_or_heap)
+- [Go Blueprint](https://go-blueprint.dev/)
+- [Go Blueprint GitHub](https://github.com/Melkeydev/go-blueprint)
+- [Go By Example](https://gobyexample.com)
+- [Effective Go](https://go.dev/doc/effective_go)
+- [Lets Go Book](https://lets-go.alexedwards.net/)
+- [Lets Go Further Book](https://lets-go-further.alexedwards.net/#packages)
+
+## YouTube Channels
+
+- [Anthony GG](https://www.youtube.com/@anthonygg_)
+- [Melkey](https://www.youtube.com/@MelkeyDev)
