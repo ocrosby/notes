@@ -26,6 +26,7 @@ Compiler Flags
 - [Effective Go](https://go.dev/doc/effective_go)
 - [Lets Go Book](https://lets-go.alexedwards.net/)
 - [Lets Go Further Book](https://lets-go-further.alexedwards.net/#packages)
+- [Learn Go With Tests](https://quii.gitbook.io/learn-go-with-tests)
 
 ## YouTube Channels
 
