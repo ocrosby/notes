@@ -80,3 +80,16 @@ git commit -m "untrack .idea directory"
 git push
 ```
 
+## Worktrees
+
+You can now use the `git worktree` command to create a new worktree.  This is useful if you want to work on a new feature or bug fix without having to switch branches.
+
+```bash
+git worktree add -b new-feature ../new-feature
+```
+
+This will create a new branch called new-feature and create a new directory called new-feature in the parent directory of the current directory.
+
+It also apparently creates a link back to the main worktree's .git directory so that you can commit changes from the new worktree.
+
+This practice allows you to work on multiple branches at the same time.
