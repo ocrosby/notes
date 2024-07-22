@@ -32,3 +32,4 @@ Compiler Flags
 
 - [Anthony GG](https://www.youtube.com/@anthonygg_)
 - [Melkey](https://www.youtube.com/@MelkeyDev)
+- [Tutorial Getting started with multi-module workspaces](https://go.dev/doc/tutorial/workspaces)
