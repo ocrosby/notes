@@ -17,6 +17,14 @@ Compiler Flags
 - go tool compile -h
 - go build -gcflags "-m=2"
 
+
+Installing the godoc tool
+
+```Shell
+go install golang.org/x/tools/cmd/godoc@latest
+```
+
+
 ## References
 
 - [Stack or Heap](https://golang.org/doc/faq#stack_or_heap)
