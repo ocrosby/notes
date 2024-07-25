@@ -1,5 +1,4 @@
 # This illustrates how to make an http request using the Python standard library
-# This illustrates how to make an http request using the Python standard library
 
 import http.client
 
