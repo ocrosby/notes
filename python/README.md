@@ -1,5 +1,33 @@
 # Python
 
+## Setup
+
+Because of issues with requests and urllib3, I am trying to install
+Python 3.12 from homebrew as follows:
+
+```bash
+brew install python@3.12
+```
+
+To ensure you are using the proper version of Python, edit your ~/.zshrc file
+to include the following:
+
+```bash
+export PATH="/usr/local/opt/python@3.12/bin:$PATH"
+```
+
+Then make sure to reload your shell configuration
+
+```bash
+source ~/.zshrc
+```
+
+Verify the version of Python you are using
+
+```bash
+python3 --version
+```
+
 Creating a new virtual environment
 
 ```bash
