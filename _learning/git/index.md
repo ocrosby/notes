@@ -15,6 +15,10 @@ In this guide, we will explore the core concepts of Git and learn how to use Git
 - [References](references.md)
 
 
+### Gitflow Process
+
+The Gitflow process is a branching model that helps teams manage their codebase effectively. It defines a set of rules and conventions for how branches should be created, merged, and managed in a Git repository. The Gitflow process is based on the concept of feature branches, develop branches, release branches, and master branches.
+
 ```mermaid
 sequenceDiagram
     participant Developer
