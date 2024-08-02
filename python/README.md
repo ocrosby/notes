@@ -28,6 +28,23 @@ Verify the version of Python you are using
 python3 --version
 ```
 
+Also in PyCharm I had to create a new local interpreter and point it to
+
+```/opt/homebrew/Cellar/python@3.12/3.12.4/bin/python3.12```
+
+To set the default Python interpreter in PyCharm to the one located at /opt/homebrew/Cellar/python@3.12/3.12.4/bin/python3.12, follow these steps:
+
+1. Open PyCharm.
+2. Go to PyCharm > Preferences (or File > Settings on Windows/Linux).
+3. Navigate to Project: <Your Project Name> > Python Interpreter.
+4. Click on the gear icon next to the current interpreter and select Add....
+5. Choose System Interpreter.
+6. Browse to /opt/homebrew/Cellar/python@3.12/3.12.4/bin/python3.12 and select it.
+7. Click OK to apply the changes.
+
+To set this interpreter as the default for all new projects:
+
+
 Creating a new virtual environment
 
 ```bash
