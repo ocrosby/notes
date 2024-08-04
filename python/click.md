@@ -28,6 +28,71 @@ pip install click
 
 ## Usage
 
+Initially when working on a click project it's best to start off by creating your main module like this
+
+```Python
+def cli():
+   print 'Hello World!'
+```
+
+So you can test the setuptools installation without click first.
+
+```Python
+from setuptools import setup
+
+setup(
+    name='myproject',
+    version='0.1',
+    py_modules=['myproject'],
+    install_requires=[
+        'Click',
+    ],
+    entry_points='''
+        [console_scripts]
+        myproject=myproject:cli
+    ''',
+)
+```
+
+Then you can run the following command to install the package
+
+```Shell
+pip install -e .
+```
+
+Or using the long form:
+
+```Shell
+pip install --editable .
+```
+
+after this point you can run the command `myproject` in the terminal and it should print `Hello World!`
+
+```Shell
+myproject
+```
+
+This is made possible because the installation adds a command-line directory to your virtual environment's bin directory.
+
+Once this is verified you can start by changing the `cli` function to use click.
+
+```Python
+import click
+
+@click.command()
+def cli():
+    click.echo('Hello World!')
+```
+
+The difference here is that you can now use the help menu to see what the command does.
+
+```Shell
+myproject --help
+```
+
+This demonstrates click at work.
+
+
 ### Basic Command
 
 To create a Click command, you need to use the `@click.command()` decorator.
