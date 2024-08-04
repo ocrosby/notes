@@ -163,7 +163,7 @@ conn.close()
 
 ## Conclusion
 
-In this article, we explored how to implement a Data Access Layer in Python. The DAL provides a layer of abstraction that separates the data access logic from the business logic, making the code more organized and maintainable. By following the principles of the DAL design pattern, we can create scalable and maintainable applications.
+In this document, we explored how to implement a Data Access Layer in Python. The DAL provides a layer of abstraction that separates the data access logic from the business logic, making the code more organized and maintainable. By following the principles of the DAL design pattern, we can create scalable and maintainable applications.
 
 
 **Remember**:
