@@ -238,6 +238,112 @@ if __name__ == "__main__":
     hello()
 ```
 
+## Function docstrings in the help page
+
+Click automatically generates help pages for commands based on the docstrings of the functions. You can add docstrings to your functions to provide additional information about the command.
+
+```Python
+import click
+
+@click.command()
+def hello():
+    """Prints a greeting message."""
+    click.echo("Hello, World!")
+    
+if __name__ == "__main__":
+    hello()
+```
+
+When you run the command with the `--help` option, you will see the docstring displayed in the help page.
+
+```Shell
+python hello.py --help
+```
+
+This will output:
+
+```Shell
+Usage: hello.py [OPTIONS]
+
+  Prints a greeting message.
+  
+Options:
+    --help  Show this message and exit.
+```
+
+Note: Here the function docstring for the hello function gets rendered in the help page.
+
+There is also a help argument to option that can be added to the option and arg to display in the help page.
+
+```Python
+import click
+
+@click.command()
+@click.option("--name", help="The name to greet.")
+def hello(name):
+    """Prints a greeting message."""
+    click.echo(f"Hello, {name}!")
+    
+if __name__ == "__main__":
+    hello()
+```
+
+When you run the command with the `--help` option, you will see the docstring displayed in the help page.
+
+```Shell
+python hello.py --help
+```
+
+This will output:
+
+```Shell
+Usage: hello.py [OPTIONS]
+
+  Prints a greeting message.
+  
+Options:
+    --name TEXT  The name to greet.
+    --help       Show this message and exit.    
+```
+
+
+### Defining multiple options
+
+You can define multiple options for a command by using the `@click.option()` decorator multiple times.
+
+```Python
+# hello.py
+
+import click
+
+@click.command()
+@click.option("--string", default="World", help="This is the thing that is greeted.")
+@click.option("--repeat", default=1, help="How many times to greet the thing.")
+def hello(string, repeat):
+   """This script greets you."""
+   for _ in range(repeat):
+      click.echo(f"Hello, {string}!")
+      
+if __name__ == "__main__":
+    hello()
+```
+
+Note: click automatically determines the type of the option based on the default value provided. In this case, 
+the `--repeat` option is an integer because the default value is an integer.
+
+In the option specification you can also be explicit by including the type of the option.
+
+```Python
+@click.option("--repeat", default=1, type=int, help="How many times to greet the thing.")
+```
+    
+When you run the command with the `--help` option, you will see the docstring displayed in the help page.
+
+```Shell
+python hello.py --help
+```
+
+
 
 ## Click Project Structure
 
