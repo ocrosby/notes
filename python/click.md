@@ -17,7 +17,8 @@ as necessary. It is a simple and easy-to-use library that can be used to build c
     - [Command with Arguments](#command-with-arguments)
     - [Command with Options](#command-with-options)
     - [Grouping Commands](#grouping-commands)
-3. [References](#references)
+3. [Click Project Structure](#click-project-structure)
+4. [References](#references)
 
 ## Installation
 
