@@ -388,8 +388,8 @@ Arguments are positional and options are not. Arguments are required by default,
 import click
 
 @click.command()
-@click.argument("name")
 @click.option("--greeting", default="Hello", help="The greeting message.")
+@click.argument("name")
 def hello(name, greeting):
     click.echo(f"{greeting}, {name}!")
     
@@ -414,6 +414,181 @@ Options:
     --greeting TEXT  The greeting message.
     --help           Show this message and exit.
 ```
+
+Note: Arguments come after options in the command line.
+
+### Creating an output file argument
+
+You can create an argument that takes a file path as input by using the `click.File()` function.
+
+```Python
+import click
+
+@click.command()
+@click.argument("output", type=click.File("w"))
+def hello(output):
+    output.write("Hello, World!")
+    
+if __name__ == "__main__":
+    hello()
+```
+
+In this example, the `output` argument takes a file path as input and opens the file in write mode.
+
+When you run the command with the `--help` option, you will see the docstring displayed in the help page.
+
+```Shell
+python hello.py --help
+```
+
+This will output:
+
+```Shell
+Usage: hello.py [OPTIONS] OUTPUT
+
+Options:
+    --help  Show this message and exit.
+```
+
+### Creating a password option
+
+You can create an option that takes a password as input by using the `click.prompt()` function with the `hide_input=True` parameter.
+
+```Python
+import click
+
+@click.command()
+@click.option("--password", prompt=True, hide_input=True, confirmation_prompt=True)
+def hello(password):
+    click.echo(f"Password: {password}")
+    
+if __name__ == "__main__":
+    hello()
+```
+
+In this example, the `password` option takes a password as input and hides the input from the user.
+
+When you run the command with the `--help` option, you will see the docstring displayed in the help page.
+
+```Shell
+python hello.py --help
+```
+
+This will output:
+
+```Shell
+Usage: hello.py [OPTIONS]
+
+Options:
+    --password TEXT  [required]
+    --help           Show this message and exit.
+```
+
+### Creating a choice option
+
+You can create an option that takes a choice as input by using the `click.option()` decorator with the `type` parameter set to `click.Choice()`.
+
+```Python
+import click
+
+@click.command()
+@click.option("--color", type=click.Choice(["red", "green", "blue"]))
+def hello(color):
+    click.echo(f"Color: {color}")
+    
+if __name__ == "__main__":
+    hello()
+```
+
+In this example, the `color` option takes a choice of `red`, `green`, or `blue` as input.
+
+When you run the command with the `--help` option, you will see the docstring displayed in the help page.
+
+```Shell
+python hello.py --help
+```
+
+This will output:
+
+```Shell
+Usage: hello.py [OPTIONS]
+
+Options:
+    --color [red|green|blue]
+    --help  Show this message and exit.
+```
+
+### Creating a flag option
+
+You can create an option that acts as a flag by using the `click.option()` decorator with the `is_flag` parameter set to `True`.
+
+```Python
+import click
+
+@click.command()
+@click.option("--verbose", is_flag=True)
+def hello(verbose):
+    if verbose:
+        click.echo("Verbose mode enabled.")
+    else:
+        click.echo("Verbose mode disabled.")
+        
+if __name__ == "__main__":
+    hello()
+```
+
+In this example, the `verbose` option acts as a flag that can be used to enable or disable verbose mode.
+
+When you run the command with the `--help` option, you will see the docstring displayed in the help page.
+
+```Shell
+python hello.py --help
+```
+
+This will output:
+
+```Shell
+Usage: hello.py [OPTIONS]
+
+Options:
+    --verbose
+    --help     Show this message and exit.
+```
+
+### Creating a hidden option
+
+You can create an option that is hidden from the help page by using the `click.option()` decorator with the `hidden` parameter set to `True`.
+
+```Python
+import click
+
+@click.command()
+@click.option("--hidden", hidden=True)
+def hello(hidden):
+    click.echo(f"Hidden: {hidden}")
+    
+if __name__ == "__main__":
+    hello()
+```
+
+In this example, the `hidden` option is hidden from the help page.
+
+When you run the command with the `--help` option, you will see the docstring displayed in the help page.
+
+```Shell
+python hello.py --help
+```
+
+This will output:
+
+```Shell
+Usage: hello.py [OPTIONS]
+
+Options:
+    --help  Show this message and exit.
+```
+
+
 
 
 ## Click Project Structure
