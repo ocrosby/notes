@@ -344,6 +344,77 @@ python hello.py --help
 ```
 
 
+### Option name to argument mapping
+
+By default, Click will map the option name to the argument name by replacing dashes with underscores.
+
+```Python
+import click
+
+@click.command()
+@click.option("--name", default="World", help="The name to greet.")
+@click.option('--birth-date', default='2022-01-01', help='The birth date of the person.')
+def hello(name, birth_date):
+    click.echo(f"Hello, {name}! Your birth date is {birth_date}.")
+    
+if __name__ == "__main__":
+    hello()
+```
+
+Notice here that the `--birth-date` option is mapped to the `birth_date` argument in the function.
+
+When you run the command with the `--help` option, you will see the docstring displayed in the help page.
+
+```Shell
+python hello.py --help
+```
+
+This will output:
+
+```Shell
+Usage: hello.py [OPTIONS]
+
+Options:
+    --name TEXT        The name to greet.
+    --birth-date TEXT  The birth date of the person.
+    --help             Show this message and exit.
+```
+
+### Arguments vs Options
+
+Arguments are positional and options are not. Arguments are required by default, while options are not.
+
+```Python
+import click
+
+@click.command()
+@click.argument("name")
+@click.option("--greeting", default="Hello", help="The greeting message.")
+def hello(name, greeting):
+    click.echo(f"{greeting}, {name}!")
+    
+if __name__ == "__main__":
+    hello()
+```
+
+In this example, the `name` argument is required, while the `greeting` option is not.
+
+When you run the command with the `--help` option, you will see the docstring displayed in the help page.
+
+```Shell
+python hello.py --help
+```
+
+This will output:
+
+```Shell
+Usage: hello.py [OPTIONS] NAME
+
+Options:
+    --greeting TEXT  The greeting message.
+    --help           Show this message and exit.
+```
+
 
 ## Click Project Structure
 
