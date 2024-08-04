@@ -9,6 +9,16 @@ as necessary. It is a simple and easy-to-use library that can be used to build c
 - atomic help page generation
 - supports lazy loading of subcommands at runtime
 
+## Table of Contents
+
+1. [Installation](#installation)
+2. [Usage](#usage)
+    - [Basic Command](#basic-command)
+    - [Command with Arguments](#command-with-arguments)
+    - [Command with Options](#command-with-options)
+    - [Grouping Commands](#grouping-commands)
+3. [References](#references)
+
 ## Installation
 
 ```Shell
@@ -147,3 +157,8 @@ This will output:
 Hello, Alice!
 ```
 
+
+## References
+
+- [Click - Python Documentation](https://click.palletsprojects.com)
+- [Click - PyPI](https://pypi.org/project/click/)
