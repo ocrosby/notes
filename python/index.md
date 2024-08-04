@@ -242,3 +242,5 @@ if c in colors:
 - [Data Access Layer](./dal.md)
 - [Write Robust API's In Python With Three Layer Architecture, FastAPI and Pydantic Models](https://medium.com/@yashika51/write-robust-apis-in-python-with-three-layer-architecture-fastapi-and-pydantic-models-3ef20940869c)
 - [Python 3.12](https://www.python.org/downloads/release/python-312/)
+- [Python Packaging User Guide](https://packaging.python.org/en/latest/)
+- 
