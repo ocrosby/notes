@@ -157,6 +157,26 @@ This will output:
 Hello, Alice!
 ```
 
+## Click Project Structure
+
+```text
+my_cli/
+├── my_cli/
+│   ├── __init__.py
+│   ├── cli.py  # Main entry point for the CLI
+│   ├── commands/
+│   │   ├── __init__.py
+│   │   ├── command1.py  # First subcommand
+│   │   ├── command2.py  # Second subcommand
+│   │   └── ...          # Additional subcommands
+├── tests/
+│   ├── __init__.py
+│   ├── test_command1.py  # Tests for the first subcommand
+│   ├── test_command2.py  # Tests for the second subcommand
+│   └── ...               # Additional tests
+├── setup.py              # Setup script for the package
+└── README.md             # Project README
+```
 
 ## References
 
