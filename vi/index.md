@@ -21,6 +21,105 @@ vi filename
 - **Visual Block Mode**: This mode is used to select text in a block. To enter Visual Block Mode, press `Ctrl + V`.
 - **Insert Normal Mode**: This mode is used to insert text in Normal Mode. To enter Insert Normal Mode, press `Ctrl + O`.
 
+## Configuring `vi` with Custom Settings
+
+You can customize `vi` by adding settings to your `.vimrc` file. Here are some custom settings:
+
+### Show Line Numbers
+
+To show line numbers in `vi`, add the following line to your `.vimrc` file:
+
+```sh
+set number
+```
+
+or in the short form
+
+```sh
+set nu
+```
+
+### Enable Syntax Highlighting
+
+To enable syntax highlighting in `vi`, add the following line to your `.vimrc` file:
+
+```sh
+syntax on
+```
+
+### Set Tab Width
+
+To set the tab width in `vi`, add the following line to your `.vimrc` file:
+
+```sh
+set tabstop=4
+```
+
+### Set Auto Indent
+
+To enable auto-indent in `vi`, add the following line to your `.vimrc` file:
+
+```sh
+set autoindent
+```
+
+### Shift Width
+
+To set the shift width in `vi`, add the following line to your `.vimrc` file:
+
+```sh
+set shiftwidth=4
+```
+
+### Set Expand Tab
+
+To set expand tab in `vi`, add the following line to your `.vimrc` file:
+
+```sh
+set expandtab
+```
+
+### Enable Line Wrapping
+
+To enable line wrapping in `vi`, add the following line to your `.vimrc` file:
+
+```sh
+set wrap
+```
+
+### Highlight Search Results
+
+To highlight search results in `vi`, add the following line to your `.vimrc` file:
+
+```sh
+set hlsearch
+```
+
+
+### Show Matching Parentheses
+
+To show matching parentheses in `vi`, add the following line to your `.vimrc` file:
+
+```sh
+set showmatch
+```
+
+### Example .vimrc file
+
+Here is an example `.vimrc` file with the above settings:
+
+```text
+set nu
+syntax on
+set tabstop=4
+set shiftwidth=4
+set expandtab
+set wrap
+set hlsearch
+set autoindent
+set showmatch 
+```
+
 ## Basic Navigation
 
 - h: Move the cursor left
