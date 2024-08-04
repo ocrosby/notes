@@ -237,6 +237,7 @@ if c in colors:
 
 - [Editable Installs](https://pip.pypa.io/en/stable/topics/local-project-installs/#editable-installs)
 - [Pydantic](./pydantic.md)
+- [Click](./click.md)
 - [Dataclasses](./dataclasses.md)
 - [FastAPI](./fastapi.md)
 - [Data Access Layer](./dal.md)
