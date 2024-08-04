@@ -223,6 +223,22 @@ This will output:
 Hello, Alice!
 ```
 
+## Generating output using click.echo
+
+The `click.echo()` function is used to generate output in Click commands. It is similar to the `print()` function in Python but provides additional features such as formatting and color support.
+
+```Python
+import click
+
+@click.command()
+def hello():
+    click.echo("Hello, World!")
+    
+if __name__ == "__main__":   
+    hello()
+```
+
+
 ## Click Project Structure
 
 ```text
