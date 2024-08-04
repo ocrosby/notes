@@ -214,3 +214,9 @@ if c in colors:
 ## References
 
 - [Editable Installs](https://pip.pypa.io/en/stable/topics/local-project-installs/#editable-installs)
+- [Pydantic](./pydantic.md)
+- [Dataclasses](./dataclasses.md)
+- [FastAPI](./fastapi.md)
+- [Data Access Layer](./dal.md)
+- [Write Robust API's In Python With Three Layer Architecture, FastAPI and Pydantic Models](https://medium.com/@yashika51/write-robust-apis-in-python-with-three-layer-architecture-fastapi-and-pydantic-models-3ef20940869c)
+- [Python 3.12](https://www.python.org/downloads/release/python-312/)
