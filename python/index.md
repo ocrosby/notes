@@ -22,6 +22,28 @@ Then make sure to reload your shell configuration
 source ~/.zshrc
 ```
 
+Within your project it is useful to create a shell script to source that initializes both your PYTHONPATH and your PATH.
+
+```bash
+# .zshrc in your project root
+
+source ~/.zshrc
+
+# Export the PYTHONPATH for your project
+export PYTHONPATH=$PYTHONPATH:$HOME/Projects/python
+
+# Export the PATH for your project
+export PATH=$PATH:$HOME/Projects/python
+```
+
+This way all you need to do is to ```source .zshrc``` in your project root and you are ready to go.
+
+
+Then you can run the script to set the environment variables
+
+```bash
+```
+
 Verify the version of Python you are using
 
 ```bash
