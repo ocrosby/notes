@@ -763,3 +763,4 @@ my_cli/
 
 - [Click - Python Documentation](https://click.palletsprojects.com)
 - [Click - PyPI](https://pypi.org/project/click/)
+- [Testing Click Applications](https://click.palletsprojects.com/en/8.1.x/testing/)
