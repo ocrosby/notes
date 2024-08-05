@@ -435,6 +435,155 @@ if __name__ == "__main__":
 
 In this example, the `output` argument takes a file path as input and opens the file in write mode.
 
+
+If you specify '-' as the output argument, Click will use stdin/stdout.
+
+You can set the default to '-' to use stdin/stdout as the default.
+
+```Python
+import click
+
+@click.command()
+@click.argument("output", type=click.File("w"), default="-", required=False)
+def hello(output):
+    click.echo("Hello, World!", file=output)
+    
+if __name__ == "__main__":
+    hello()
+```
+
+But when you do notice you will need to specify the required option argument as well.  This is because arguments
+are positional and required by default.
+   
+
+Note: Arguments cannot have help text and should be documented as part of the docstring.
+
+Using the specified output file:
+
+```Shell
+python hello.py output.txt
+```
+
+Note: These files open lazy by default, so unless you start writing to them they won't be opened.
+
+
+### Using a subcommand
+
+You can create a subcommand by using the `@click.command()` decorator on a function and adding it to the main command using the `@click.group()` decorator.
+
+```Python
+import click
+
+@click.group()
+@click.option('--verbose', is_flag=True
+def cli(verbose):
+    if verbose == True:
+        click.echo('Verbose mode enabled.')
+    else:
+        click.echo('Verbose mode disabled.')
+    
+@cli.command()
+def hello():
+    click.echo("Hello, World!")
+    
+```
+
+
+### Communicating with click Context
+
+
+You can communicate with the click context by using the `click.get_current_context()` function.
+
+```Python
+import click
+
+class Config(object):
+    def __init__(self):
+        self.verbose = False
+
+pass_config = click.make_pass_decorator(Config, ensure=True)
+
+# ensure=True will create a new instance of the object if it doesn't exist on the first use of @pass_config
+
+@click.group()
+@click.option('--verbose', is_flag=True)
+@click.option('--home_directory', type=click.Path())
+@pass_config
+def cli(config, verbose, home_directory):
+    config.verbose = verbose
+    
+    if home_directory is None:
+        directory = '.'
+        
+    config.home_directory = directory   
+    
+@cli.command()
+@click.option('--string', default='World', help='This is the thing that is greeted.')
+@click.option('--repeat', default=1, help='How many times to greet the thing.')
+@click.argument('out', type=click.File('w'), default='-', required=False)
+@pass_config
+def say(config, string, repeat, out):
+    if config.verbose:
+      click.echo('We are in verbose mode')
+      
+    click.echo('Home directory is %s' % config.home_directory)  
+    for x in range(repeate):
+      click.echo('Hello %s!' % string, file=out)
+```
+
+In this example, the `Config` class is used to store the configuration settings for the command. The `pass_config` decorator is used to pass the `Config` object to the command functions.
+
+When you run the command with the `--help` option, you will see the docstring displayed in the help page.
+
+```Shell
+python hello.py --help
+```
+
+This will output:
+
+```Shell
+Usage: hello.py [OPTIONS] COMMAND [ARGS]...
+
+Options:
+    --verbose
+    --home_directory TEXT
+    --help                  Show this message and exit.
+    
+Commands:
+    say
+```
+   
+   
+
+### Using a click.Path option to specify a directory
+
+You can create an option that takes a directory path as input by using the `click.Path()` function with the `file_okay=False` parameter.
+
+```Python
+import click
+
+class Config(object):
+    def __init__(self):
+        self.verbose = False
+        self.home_directory = None
+
+pass_config = click.make_pass_decorator(Config, ensure=True)
+
+@click.command()
+@click.option("--home_directory", type=click.Path(exists=True, file_okay=False, dir_okay=True))
+@pass_config
+def hello(config, home_directory):
+    if home_directory is None:
+      directory = '.'
+      
+    config.home_directory = directory  
+    click.echo(f"Directory: {directory}")
+    
+```
+
+ 
+
+
 When you run the command with the `--help` option, you will see the docstring displayed in the help page.
 
 ```Shell
@@ -587,8 +736,6 @@ Usage: hello.py [OPTIONS]
 Options:
     --help  Show this message and exit.
 ```
-
-
 
 
 ## Click Project Structure
