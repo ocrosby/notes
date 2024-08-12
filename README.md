@@ -3,7 +3,7 @@
 ## Platforms
 
 * [Docker](./Docker.md)
-* [Kubernetes](./kube/README.md)
+* [Kubernetes](kubernetes/README.md)
 
 ## Languages
 
