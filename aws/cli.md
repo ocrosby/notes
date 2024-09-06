@@ -1,5 +1,11 @@
 # AWS CLI
 
+## Installing the AWS CLI
+
+```shell
+brew install awscli
+```
+
 ## Configuration and credentials precense
 
 Credentials and configuration settings are located in multiple places.
@@ -238,6 +244,18 @@ This environment variable only applies to an assumed role with web identity prov
 
 ## Common CLI Commands
 
+Print the version of the CLI
+
+```
+aws --version
+```
+
+List all users
+
+```shell
+aws iam list-users
+```
+
 List all S3 buckets
 
 ```bash
@@ -249,3 +267,31 @@ List all ec2 instances
 ```bash
 aws ec2 describe-instances
 ```
+
+List all resource groups
+
+```bash
+aws resource-groups list-groups
+```
+
+Create a new resource group
+
+```bash
+aws resource-groups create-group --name "MyGroup" --resource-query '{"Type":"TAG_FILTERS_1_0","Query":"{\"ResourceTypeFilters\":[\"AWS::AllSupported\"],\"TagFilters\":[{\"Key\":\"Environment\",\"Values\":[\"Production\"]}]}"}'
+```
+
+List all S3 buckets
+
+```bash
+aws s3 ls
+```
+
+List all ec2 instances
+
+```bash
+aws ec2 describe-instances
+```
+
+## References
+
+- [AWS CLI Documentation](https://docs.aws.amazon.com/cli/)

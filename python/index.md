@@ -244,3 +244,4 @@ if c in colors:
 - [Write Robust API's In Python With Three Layer Architecture, FastAPI and Pydantic Models](https://medium.com/@yashika51/write-robust-apis-in-python-with-three-layer-architecture-fastapi-and-pydantic-models-3ef20940869c)
 - [Python 3.12](https://www.python.org/downloads/release/python-312/)
 - [Python Packaging User Guide](https://packaging.python.org/en/latest/)
+- [Build Full Stack Login Page React, FastAPI, Postgresql, Tailwind CSS](https://www.youtube.com/watch?v=GtFfrOng-A0)

@@ -70,9 +70,96 @@ The control plane is the brain of the Kubernetes cluster. It is responsible for 
 * Exposing applications to the outside world
 
 
+The cluster is made up of one or more control plane nodes and a bunch of workers.
+
+The control plane is the brains of the cluster.  The workers is where we run our user or business apps.
+
+We take the app code and containerize it.  We take that and wrap it in a Pod.  We then wrap that pod in a deployment.
+
+We define all of this in a Kubernetes YAML file.
+
+We give the file to Kubernetes and it makes it all happen.
+
+### Control Plane Nodes
+
+H/A means high availability.  It means that if one of the control plane nodes goes down, the other one can take over.
+
+The control plane is responsible for making sure that the desired state of the cluster matches the actual state.
+
+Select an odd number and stick them in different failure domains that are connected by fast reliable networks.
+
+For the most part 3 control plane nodes is the magic number.  If you are super serious about it, you can go to 5.
+Any more than that is overkill.
+
+
+Services that make up the control plane
+
+* kube-apiserver
+
+
+The kube-apiserver is the front end for the Kubernetes control plane.  It is designed to scale horizontally.
+When we send a command to the control plane, it goes through the kube-apiserver.
+When we get a response back, it comes back through the kube-apiserver.
+
+Other control plane services all talk to each other via the kube-apiserver.
+
+- exposes the API (REST)
+- Consumes JSON/YAML
+
+
+* Cluster store
+- Persists cluster state & config
+- Based on etcd
+- Distributed across all control plane nodes
+- Super critical to cluster operations
+- Performance is critical
+
+
+* kube-controller-manager
+- Controller of controllers
+
+Node controller
+Deployment controller
+Endpoints controller
+
+* kube-scheduler
+- Watches API Server for work
+- Assigns tasks to worker nodes
+
+Affinity/Anti-affinity
+Constraints
+Taints
+Resources
+
+Note: In managed Kubenretes in the cloud the contorl plane nodes are managed for you.
+
+
 ### Worker Nodes
 
 Worker nodes are the machines that run the applications. They are responsible for
+
+
+Simpler than control plane nodes
+
+- kubelet
+- kube-proxy
+- Container runtime
+
+The kubelet is the main kubernetes agent that runs on every node
+You can start with a windows or a linux node
+installing the kubnlet registeres the node with the cluster
+Work on a kubernetes cluster is done in pods
+A pod is one or more containers packaged together in a single unit of deployment
+It needs a container runtime. the container runtime is the software that is responsible for running containers
+on most modern clusters, they are using containerd
+Lookup gVisor and kata containers
+container runtimes take care of the low level start and stop containers
+
+
+The kube-proxy is a network proxy that runs on each node in the cluster
+Pod IP addresses
+if you are running multiple pods they are all using the same POD IP address
+
 
 ### Pods
 
