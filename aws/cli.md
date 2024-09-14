@@ -295,3 +295,4 @@ aws ec2 describe-instances
 ## References
 
 - [AWS CLI Documentation](https://docs.aws.amazon.com/cli/)
+- [React App on AWS S3 with Static Hosting + Cloudfront | Practical AWS Projects #1](https://www.youtube.com/watch?v=mls8tiiI3uc)
