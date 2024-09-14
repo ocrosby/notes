@@ -140,3 +140,6 @@ Compute Optimized: c4, c5
 
 To read more [click here](https://aws.amazon.com/architecture/well-architected/?wa-lens-whitepapers.sort-by=item.additionalFields.sortDate&wa-lens-whitepapers.sort-order=desc&wa-guidance-whitepapers.sort-by=item.additionalFields.sortDate&wa-guidance-whitepapers.sort-order=desc).
 
+## Resources
+
+- [AWS Architecture Icons](https://aws.amazon.com/architecture/icons/)

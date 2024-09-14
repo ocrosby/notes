@@ -6,6 +6,68 @@ IPv4 addresses represent a 32-bit number.
 
 IPv4 uses the dotted decimal notation to represent an address (eg 10.20.0.1).
 
+## CIDR explination
+
+10.0.0.0/24
+
+Each of the numbers [10] [0] [0] [0] is an octet
+Each octet represents 8 bits
+Together 4 octets represent 32 bits
+
+The last part of the CIDR notation is the number of bits that are frozen in place
+In this case 24 bits are frozen in place
+Note that this locked number has to be a multiple of 8
+
+The multiples of 8 are 8, 16, 24, 32, 40, 48, 56, 64
+
+So if the last part in the CIDR notation is /24 that means
+
+- 32 - 24 = 8 bits are available for us to use
+
+So only the last octet is available for us to use
+
+Some example IP addresses that can be used in this range are
+
+10.0.0.1
+10.0.0.2
+...
+
+We can continue on in this way until we reach
+
+10.0.0.255
+
+This is the broadcast address and is not used as an address
+
+So in this case we have 254 addresses available for our use
+
+10.0.0.1 - 10.0.0.254
+
+/24 last number = 10.0.0.1 - 10.0.0.254
+/16 last two numbers = 10.0.0.1 - 10.0.255.254
+/8 last three numbers = 10.0.0.1 - 10.255.255.254
+
+Remember to calculate the number of addresses available in the cider block we use the formula
+
+2<sup>32 - n</sup> - 2
+
+where n is the number of bits frozen in place
+
+So for a /24 we have
+
+2<sup>32 - 24</sup> - 2 = 2<sup>8</sup> - 2 = 256 - 2 = 254
+
+For a /16 we have
+
+2<sup>32 - 16</sup> - 2 = 2<sup>16</sup> - 2 = 65,536 - 2 = 65,534
+
+For a /8 we have
+
+2<sup>32 - 8</sup> - 2 = 2<sup>24</sup> - 2 = 16,777,216 - 2 = 16,777,214
+
+## Subnets
+
+Subnetting is the process of dividing a network into smaller networks.
+
 ### The Math
 
 - Each IPv4 address is made up of 4 octets or 4 sections of 8 bits.
@@ -16,7 +78,7 @@ There are certain ranges that are reserved for specific uses.
 
 0.0.0.0 is not used
 
-typically addresses ending in .255 are not used as an address
+typically addresses ending in .255 are not used as an address because they are used as broadcast addresses
 
 for example 1.2.3.255 would not be used as an address
 
@@ -191,7 +253,7 @@ Note: If VPC's are created in the same region with overlapping CIDR blocks they 
 
 ## Creating VPCS
 
-Before we can launch an EC2 instance we have ot have a subnet
+Before we can launch an EC2 instance we have to have a subnet
 
 When we create a subnet we put it in an availability zone
 
@@ -217,4 +279,10 @@ So we have 251 IP addresses available for our use
 
 
 
-[CIDR Calculator](https://www.subnet-calculator.com/cidr.php)
+
+
+
+## References
+
+- [CIDR Calculator](https://www.subnet-calculator.com/cidr.php)
+- [CIDR Block Application](https://cidr.xyz/)
