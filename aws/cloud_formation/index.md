@@ -22,6 +22,56 @@ Display the AWS cloudformation help menu:
 aws cloudformation help
 ```
 
+Cloud formation templates can have outputs that can be utilized by other services. To view the outputs of a stack, 
+use the following command:
+
+```bash
+aws cloudformation describe-stacks --stack-name <stack-name>
+```
+
+Here's an example of creating an output from a stack:
+
+```yaml
+Outputs:
+  MyOutput:
+    Description: A sample output
+    Value: !Ref MyResource
+```
+
+To create a stack using a template file, use the following command:
+
+```bash
+aws cloudformation create-stack --stack-name <stack-name> --template-body file://<template-file>
+```
+
+Here's an example of a template that creates a User and outputs the users ARN.
+
+```yaml
+Resources:
+  MyUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: my-user
+      
+Outputs:
+    MyUserArn:
+        Description: The ARN of the user
+        Value: !GetAtt MyUser.Arn
+```
+
+To create a stack using the above template, use the following command:
+
+```bash
+aws cloudformation create-stack --stack-name my-stack --template-body file://template.yaml
+```
+
+To create another stack using the output user ARN, use the following command:
+
+```bash
+aws cloudformation create-stack --stack-name my-other-stack --template-body file://template.yaml --parameters ParameterKey=MyUserArn,ParameterValue=<user-arn>
+```
+
+
 ### AWS CLI cloudformation Commands
 
 - [activate-organizations-access](./commands/activate-organizations-access.md)
