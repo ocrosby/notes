@@ -1,5 +1,31 @@
 # Git
 
+Initialize a new local git repository
+
+```shell
+git init
+```
+
+
+Add the remote repository URL from a local repository to GitHub
+
+```shell
+git remote add origin <remote_repository_url>
+```
+
+Verify the remote URL
+
+```shell
+git remote -v
+```
+
+Push your changes to the remote repository
+
+```
+git push -u origin main
+```
+
+
 Checkout a repository
 
 > git clone https://github.com/yourname/yourrepo.git
