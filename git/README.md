@@ -119,3 +119,8 @@ This will create a new branch called new-feature and create a new directory call
 It also apparently creates a link back to the main worktree's .git directory so that you can commit changes from the new worktree.
 
 This practice allows you to work on multiple branches at the same time.
+
+## References
+
+- [The Most Useful Git Shortcuts](https://www.youtube.com/watch?v=CAnQ4b0uais)
+- [Stop Using Git Stash](https://www.youtube.com/watch?v=ntM7utSjeVU&t=154s)
