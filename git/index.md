@@ -6,6 +6,11 @@ Initialize a new local git repository
 git init
 ```
 
+List remote branches
+
+```shell
+git branch -r
+```
 
 Add the remote repository URL from a local repository to GitHub
 
