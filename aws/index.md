@@ -143,3 +143,4 @@ To read more [click here](https://aws.amazon.com/architecture/well-architected/?
 ## Resources
 
 - [AWS Architecture Icons](https://aws.amazon.com/architecture/icons/)
+- [Amazon Web Services - Documentation](https://github.com/awsdocs)

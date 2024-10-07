@@ -245,3 +245,4 @@ if c in colors:
 - [Python 3.12](https://www.python.org/downloads/release/python-312/)
 - [Python Packaging User Guide](https://packaging.python.org/en/latest/)
 - [Build Full Stack Login Page React, FastAPI, Postgresql, Tailwind CSS](https://www.youtube.com/watch?v=GtFfrOng-A0)
+- [Decorators In Python](https://www.geeksforgeeks.org/decorators-in-python/)
