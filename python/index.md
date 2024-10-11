@@ -1,5 +1,21 @@
 # Python
 
+## Path
+
+When you are running from the terminal, the current directory is added to the systems PATH.
+
+When you are running python it also has the concept of PYTHONPATH which is a list of directories that
+python will search for modules.
+
+When you run with the -m flag, the current directory gets added to the PYTHONPATH automatically.
+
+In order to avoid all the problems associated with Python's import system we use pip install.
+
+Take a look at the setuptools documentation for more information.
+
+You can find that here [Setuptools](https://setuptools.pypa.io/en/latest/userguide/quickstart.html)
+
+
 ## Setup
 
 Because of issues with requests and urllib3, I am trying to install
@@ -233,7 +249,17 @@ if c in colors:
     print("is main color")
 ```
 
-## References
+## Packaging References
+
+- [Setuptools](https://setuptools.pypa.io/en/latest/userguide/quickstart.html)
+- [Python Enhanncement Proposals - PEPS](https://peps.python.org/)
+- [Python and TOML: New Best Friends](https://realpython.com/python-toml/)
+- [Configuring setuptools lusing pyproject.toml files](https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html)
+- [PEP 621 - Storing project metadata in pyproject.toml](https://peps.python.org/pep-0621/)
+- [How to Publish an Open-Source Python Package to PyPI](https://realpython.com/pypi-publish-python-package/)
+
+
+## Generic References
 
 - [Editable Installs](https://pip.pypa.io/en/stable/topics/local-project-installs/#editable-installs)
 - [Pydantic](./pydantic.md)

@@ -1,5 +1,38 @@
 # Packaging
 
+## Overview
+
+Python packaging can be a bit confusing at first. There are many tools and standards to choose from.
+
+
+Questions:
+
+- What is the difference between a package and a module?
+- What is the difference between a package and a distribution?
+- What is the difference between a source distribution and a binary distribution?
+- What is the difference between a wheel distribution and a source distribution?
+- What is the difference between a universal distribution and a platform-specific distribution?
+- How do you create a wheel package for your project?
+- How do you create a source distribution for your project?
+- How do you create a binary distribution for your project?
+- How do you create a universal distribution for your project?
+- How do you create a platform-specific distribution for your project?
+- How do you create a pure Python distribution for your project?
+- How do you create a C extension distribution for your project?
+
+Note: An interesting article on the subject is [Python Packaging: A Brief Introduction](https://realpython.com/python-packaging/)
+
+Python has a way to run a directory as a script. This is done by creating a `__main__.py` file in the directory. 
+This is useful for creating command line tools.
+
+Now we use pyproject.toml, it contains information about the project.
+
+[Configuring Python Projects with pyproject.toml](https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html)
+
+```toml
+
+```python
+
 ## Using setup.py
 
 
@@ -135,3 +168,7 @@ setup-cfg-fmt setup.cfg
 ```
 
 this will format the setup.cfg file
+
+## References
+
+- [How to Build a Complete Python Package Step-by-Step](https://www.youtube.com/watch?v=5KEObONUkik)
