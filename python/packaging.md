@@ -1,5 +1,52 @@
 # Packaging
 
+## What's the scoop with setup.cfg, setup.py, and pyproject.toml?
+
+- setup.cfg is a configuration file for setuptools
+- setup.py is a script that runs setuptools
+- pyproject.toml is a configuration file for build tools
+
+Two methods for creating a python package:
+
+Method #1: Using `python setup.py`
+
+Method #2: Using `pyproject.toml`
+
+Install setuptools
+
+```shell
+pip install setuptools
+```
+
+Install your the package in editable mode
+
+```shell
+pip install --editable .
+```
+
+setup.py
+
+```python
+from setuptools import setup
+
+setup(
+    name='mycalculator',
+    version='0.0.1',
+    py_modules=['mycalculator'],
+    packages=find_packages(),
+    install_requires=[
+        'requests',
+        'pydantic',
+        'Click',
+    ],
+    entry_points={
+        'console_scripts': [
+            'calc=mycalculator:main',
+        ]
+    }
+)
+```
+
 ## Overview
 
 Python packaging can be a bit confusing at first. There are many tools and standards to choose from.
