@@ -165,7 +165,7 @@ Read the AWS Services Whitepaper.
 
 
 Capital Expenditures (CapEx)
-: Captial expenditures are upfront purchases toward fixed assets.
+: Capital expenditures are upfront purchases toward fixed assets.
 
 Operating Expenses (OpEx)
 : Operating expenses are funds used to run day-to-day operations.
@@ -236,12 +236,12 @@ connectivity in an AWS region.
 Availability Zone Characteristics
 
 - each connected via low latency links
-- they are fault tolerant
+- they are fault-tolerant
 - they provide high availability
 
 
 Note:
-In order to be considered fault tolerant an application would have to span across multiple availability zones.
+In order to be considered fault-tolerant an application would have to span across multiple availability zones.
 
 Note:
 If an application running across multiple availability zones goes down it could be because the entire region is down.
@@ -253,6 +253,289 @@ Exam Tips
 - Multiple availability zone deployments provide high availability and fault tolerance
 
 
+Revieiwing Edge Locations and Local Zones
+
+Latency Explained
+
+Latency
+: The time that passes between a user request and the resulting response
+
+Local Zones place AWS services closer to end-users.
+
+Local Zones are extensions of AWS regions that are geographically close to large populations.
+
+
+Edge Locations can help to reduce latency.  They aren't used to launch resources but to cache content.
+
+
+There are more edge locations than regions and availability zones.
+
+
+Note: Local zones can be used to ensure millisecond latency.
+
+Note: Edge locations can be utilized to lower lateny on a website that is available on multiple continents.
+
+Edge locations are a feature of the CloudFront CDN.
+
+
+Exam Tips
+
+
+## Introducing the Frameworks
+
+### Cloud Adoption Framework
+
+The Cloud Adoption Framework (CAF) focuses on using AWS to digitally transform and accelerate business outcomes.
+
+Several Pieces
+
+Perspectives and Foundational Capabilities
+
+#### Security Perspective
+
+**Security**
+
+- Governance
+- Assurance
+- Application
+
+**Protection**
+
+- Infrastructure
+- Data
+
+
+**Management**
+
+- Identity and Access Management (IAM)
+- Vulnerability
+
+#### Business Perspective
+
+**Management**
+
+- Strategy
+- Portfolio
+- Innovation
+- Product
+
+**Data**
+
+- Monetization
+- Science
+
+**Business Insight**
+
+
+#### Perspectivies and Foundational Capabilities
+
+Operations
+
+**Management**
+
+- Event (AIOps)
+- Incident and Problem
+- Change and Release
+- Performance and Capacity
+- Configuration
+- Patch
+- Availability and Continuity
+- Application
+
+**Observability**
+
+Governance
+
+**Management**
+
+- Program and Benefits Benefits
+- Risk
+- Cloud Financial
+- Application Portfolio
+
+**Data**
+
+- Governance
+- Curation
+
+People
+
+**Transformation**
+
+- Leadership
+- Workforce
+
+**Organization**
+
+- Design
+- Alignment
+
+**Cloud Fluency**
+
+**Change Acceleration**
+
+**Culture Evolution**
+
+The Cloud Adoption Framework has four domains.
+
+Cloud Transformation Domains.
+
+Domain 1 - Technology
+
+- Migrate and Modernize
+
+Domain 2 - Process
+
+- Digitize, automate, and optimize
+
+Domain 3 - Organization
+
+- Reminagine orchestration
+
+Domain 4 - Product
+
+- Reimagine your business model
+
+
+Cloud Transformation Journey Phases
+
+**Envision**
+
+Benefits to business outcomes
+
+**Align**
+
+Gaps across perspectives
+
+**Launch**
+
+Deliver initiatives with value
+
+**Scale**
+
+Expand sutainable initiatives
+
+
+### AWS Well-Architected Framework
+
+[Deep Dive - Course](https://learn.acloud.guru/course/cf52e1dc-2d84-4f01-a9cb-6c010c748790/overview)
+
+
+Six Pillars of the AWS Well-Architected Framework
+
+- Security
+- Cost Optimization
+- Performance Efficiency
+- Operational Excellence
+- Reliability
+- Sustainability
+
+Security focuses on protection of data, systems, and any assets used by your workload.
+Cost Optimization focuses on the ongoing process of maintaining costs in the cloud.
+Performance Efficiency focuses on the ability to use computing resources efficiently to meet requirements.
+Operational Excellence focuses on creating applications that successfully support your workload.
+Reliability focuses on architecting a workload to be consistent and able to recover quickly.
+Sustainability focuses on environmental impacts like energy efficiency and resource consumption.
+
+
+General Design Principles
+
+- Stop guessing your capacity needs
+- Test Systems ad Production Scale
+- Consider Evolutionary Architectures
+- Automate with Architectural Experimentation in Mind
+- Drive Architectures Using Data
+- Improve Through Game Days
+
+Exam Tips
+
+- Understand the CAF Perspectiives and the Cloud Transformation Journey Phases (Envision, Align, Launch, Scale)
+- Know how those phases encompass the domains and perspectivies
+- Know the benefits of using that framework
+- Understand the benefits of using the Cloud Adoption Framework
+- Understand the Well-Architected Framework pillars, design principles, and how they apply in the real world.
+
+### Meeting the AWS Management Console and Accessing AWS
+
+- The AWS Management Console
+- Root User
+- The AWS Command Line Interface (CLI)
+
+### Root User
+
+There can be multiple users in an AWS account but there is only one root user.
+
+The root user has full access to all AWS services and resources in the account.
+
+The root user is the only user that can perform certain tasks like closing an account.
+
+The root user should not be used for everyday tasks.
+
+
+When you create an AWS account your first step should be to enable MFA on the root account.
+
+Create a new user or group in IAM for day to day tasks.
+
+### The AWS Command Line Interface (CLI)
+
+The AWS CLI is a tool that allows you to interact with AWS services from the command line.
+
+The AWS CLI is available for Windows, Mac, and Linux.
+
+The AWS CLI is a powerful tool that can be used to automate tasks.
+
+The AWS CLI is a great way to interact with AWS services without using the AWS Management Console.
+
+
+#### Command Line Interface
+
+Manage resources from a terminal session
+
+
+#### Application Code
+
+Access from application code with SDKs using programmatic calls
+
+#### Software Development Kits (SDKs)
+
+Access from programming languages (Java, Python, C#, and more).
+
+
+### Exam Tips
+
+- The root user should be protected by MFA.
+- The root user has power that no other user has.
+- The CLI and SDKs are other options to manage AWS resources.
+
+
+#### Platform Perspective
+
+**Architecture and Engineering**
+
+- Platform
+- Data
+
+**Continuous Integration/Continuous Delivery (CI/CD)**
+
+**Modern Application Development**
+
+**Provisioning and Orchestration**
+
+
+
+#### Incident Response
+
+
+#### Threat Detection
+
+
+
+### AWS Well-Architected Framework
+
+- An Edge Location ensures low latency by placing content closer to users.
+- There are more Edge Locations than Regions and Availability Zones.
+- A Local Zone is an extension of a Region enabling things like real-time gaming and video streaming.
+
 ## Cloud Foundations and Compute
 
 ## Storage, Networking, and Databases
@@ -262,6 +545,20 @@ Exam Tips
 ## Monitoring, Security, and Pricing
 
 ## Exam Preparation
+
+- Know the Service Categories
+- Know the Six Advantages of Cloud Computing (Global in Minutes, No Data Center Spend, Economies of Scale, Speed and Agility, Stop Guessing Capacity, CapEx for Variable Expense)
+- Cloud Benefits (High Availability, Elasticity, Agility, Durability)
+- Know the Cloud Computing Models (IaaS, SaaS, PaaS)
+- Know the Cloud Deployment Models (Private, Public, Hybrid)
+- Understand that Regions are made up of two or more Availability Zones
+- Understand that Availability Zones are made up of multiple data centers
+- Understand that Multi-AZ deployments provide high availability and fault tolerance
+- Low Latency is good and Edge Locations provide that as an extension of Cloud Front
+- Local Zone's are an extension of a Region and provide low latency for things like real-time gaming and video streaming
+- Remember that Teh Cloud Adoption Framework has phases and domains
+- Remember that the Well-Architected Framework has six pillars (Security, Cost Optimization, Performance Efficiency, Operational Excellence, Reliability, Sustainability)
+- 
 
 ## Resources
 
