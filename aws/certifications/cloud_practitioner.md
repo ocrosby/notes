@@ -558,7 +558,125 @@ Access from programming languages (Java, Python, C#, and more).
 - Local Zone's are an extension of a Region and provide low latency for things like real-time gaming and video streaming
 - Remember that Teh Cloud Adoption Framework has phases and domains
 - Remember that the Well-Architected Framework has six pillars (Security, Cost Optimization, Performance Efficiency, Operational Excellence, Reliability, Sustainability)
-- 
+- Remember root user = power, root user + MFA = GOOD
+
+
+## Compute: The Big Picture
+
+Compute is used to describe concepts and services geared towards computation and processing
+
+- Central Processing Unit
+- Graphics Processing Unit
+
+Elastic Cloud Compute (EC2)
+: A web service that provides resizable compute capacity in the cloud.
+
+it can grow and shrink based on demand.
+
+EC2 is a virtual server in the cloud.
+
+Amazon Machine Image (AMI)
+: A template that contains the software configuration (OS, application server, and applications) required to launch your instance.
+
+There is a free tier for EC2.
+
+EC2 has 6 families of instances:
+
+- General Purpose
+- Compute Optimized
+- Memory Optimized
+- Accelerated Computing
+- Storage Optimized
+- High Performance Computing (HPC Optimized)
+
+### On-Demand Instances
+
+Fixed Price **billed by the second** on instances.
+
+Use when:
+
+- Low costs, no upfront payments or commitments
+- Cannot interrupt unpredictable workloads
+- Developing applications
+- Workload won't run longer than a year
+
+Capacity Reservations hold capacity whether you run an instance or not.
+
+### Spot Instances
+
+Take advantage of unused EC2 capacity.
+
+Use when:
+
+- Not concerned with start or stop time
+- Can interrupt workload
+- Very low compute prices are needed
+- CHEAPEST OPTION
+
+Spot pricing goes into effect at the beginning fo the hour and can provide savings of up to 90% off of on-demand prices.
+
+### Dedicated Hosts
+
+Physical servers with EC2 instance capacity fully dedicated to your use.
+
+Use when:
+
+- Bring your own server-bound software license like Microsoft or Oracle
+- Regulatory or corporate compliance requirements around tenancy (sharing a server with other customers)
+
+Dedicated hosts can save up to 70% off On-Demand prices. **No sharing** your server with other customers.
+
+
+Dedicated hosts are physical servers
+Dedicated instances run on the dedicated host
+
+### Reserved Instances (RIs)
+
+Commit to a specific instance type for 1 to 3 years
+
+Use when:
+
+- Steady state or predictable usage
+- Pay money upfront
+- Application requires a capacity reservation
+
+
+Up to 72% off of On-Demand prices with a **CONTRACT**.
+**Reserve capacity** in an AZ for any duration.
+Pay all, partial or no upfront, but **All Upfront offers the highest discount**.
+Can convert instance type at a lower discout of up to 66%.
+
+
+### Savings Plans
+
+Commit to a specific amount of compute usage for a 1 or 3 year term. (measured per hour).
+
+Use when:
+
+- Lower your bill across multiple compute services
+- Flexibility ot change compute services, instance types, operating systems, or Regions.
+
+72% off On Demand prices.
+
+Share savings **across compute services**.
+
+**No** capacity reservations.
+
+Exam tips:
+
+- Know the EC2 pricing options (On-Demand, Spot, Reserved, Dedicated Hosts, Savings Plans)
+- Understand the real world uses of EC2 (On-Demand for unpredictable workloads, Spot for very low compute prices, Reserved for steady state or predictable usage, Dedicated Hosts for regulatory or corporate compliance requirements, Savings Plans for lowering your bill across multiple compute services)
+
+### Load Balancing
+
+There are 4 load balancer types
+
+- Application Load Balancer (HTTP/HTTPS)
+- Network Load Balancer (TCP/UDP)
+- Gateway Load Balancer
+- Classic Load Balancer
+
+Review the TCP layers to understand this
 
 ## Resources
 
