@@ -678,5 +678,32 @@ There are 4 load balancer types
 
 Review the TCP layers to understand this
 
+## Containers: The Big Picture
+
+Container services in AWS
+
+- Elastic Container Service (ECS)
+- Elastic Kubernetes Service (EKS)
+- Elastic Container Registry (ECR)
+
+## Lambda and Fargate
+
+Use Lambda for serverless computing tasks lasting less than 15 minutes.
+Use Fargate for serverless computing tasks lasting more than 15 minutes.
+
+
+Lambda has a free tier and you are given 1 million requests per month for free.
+
+Fargate has no free tier.
+
+
+## Introducing Additional Compute Services
+
+- Outposts
+- Lightsail
+- Batch
+- Wavelength
+
+
 ## Resources
 
