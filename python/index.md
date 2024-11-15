@@ -272,3 +272,4 @@ if c in colors:
 - [Python Packaging User Guide](https://packaging.python.org/en/latest/)
 - [Build Full Stack Login Page React, FastAPI, Postgresql, Tailwind CSS](https://www.youtube.com/watch?v=GtFfrOng-A0)
 - [Decorators In Python](https://www.geeksforgeeks.org/decorators-in-python/)
+- [Automate with Python - Video](https://www.youtube.com/watch?v=PXMJ6FS7llk)
