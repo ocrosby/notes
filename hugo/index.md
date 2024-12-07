@@ -1,5 +1,26 @@
 # Hugo
 
+Hugo is a static site generator written in Go.  It is designed to be fast and flexible.  Hugo is a great choice for blogs, documentation, and other content-driven sites.
+
+## Features
+
+- Fast build times
+- Flexible content organization
+- Easy to use
+- Extensible with themes and plugins
+- Supports Markdown, HTML, and other formats
+- Built-in server for development
+- Live reloads for changes
+- Customizable URLs
+- Multilingual support
+- Built-in taxonomies and menus
+- Image processing
+- Asset management
+- Custom output formats
+- Shortcodes
+- Data templates
+
+
 ## Installationn
 
 ```Shell
