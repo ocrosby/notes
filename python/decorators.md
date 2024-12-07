@@ -161,7 +161,9 @@ Decorators are a powerful feature in Python that allows you to add new functiona
 
 ## References
 
+- [Python Decorators - The Complete Guide from ArjanCodes](https://arjan.codes/python-decorators/)
 - [Python Decorators](https://realpython.com/primer-on-python-decorators/)
+- [Decorators in Python](https://www.youtube.com/watch?v=WpF6azYAxYg)
 - [Python Decorators - Video](https://www.youtube.com/watch?v=9oyr0mocZTg)
 - [Decorators In Python](https://www.geeksforgeeks.org/decorators-in-python/)
 - [Automate with Python - Video](https://www.youtube.com/watch?v=PXMJ6FS7llk)

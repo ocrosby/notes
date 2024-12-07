@@ -261,6 +261,7 @@ if c in colors:
 
 ## Generic References
 
+- [ArjanCodes](https://www.arjancodes.com/)
 - [Editable Installs](https://pip.pypa.io/en/stable/topics/local-project-installs/#editable-installs)
 - [Pydantic](./pydantic.md)
 - [Click](./click.md)
