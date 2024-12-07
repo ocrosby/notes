@@ -22,7 +22,6 @@ Hugo is a static site generator written in Go.  It is designed to be fast and fl
 
 Example Hugo Sites:
 
-- [Hugo Showcase](https://gohugo.io/showcase/)
 - [Hugo Themes](https://themes.gohugo.io)
 - [Hugo Documentation](https://gohugo.io/documentation/)
 - [Hugo Community](https://discourse.gohugo.io)
