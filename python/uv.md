@@ -67,6 +67,9 @@ ruff --version
 uv python install 3.10 3.11 3.12
 
 uv venv --python 3.12.0
+
+# Running a script
+uv run hello.py
 ```
 
 Note: This will create a new project directory.
