@@ -58,13 +58,13 @@ You will need to change in that directory for remaining commands.
 uv add requests
 ```
 
+### List the installed packages
+
+```shell
+uv pip list
+```
 
 ```Shell
-# Add packages
-uv add requests
-
-# List the installed packages
-uv pip list
 
 # Check the project
 uv run ruff check
