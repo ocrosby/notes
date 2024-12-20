@@ -47,11 +47,24 @@ Before you begin, ensure that you have the GitHub CLI (gh) installed and authent
 ## Steps
 1. Create a New GitHub Repository
 
+    ```shell
+    mkdir my-new-repo
+    cd my-new-repo
+    git init
+    ```
+
     To create a new GitHub repository, use the gh repo create command. Replace <repository_name> with the name you want for your new repository:
 
     ```bash
-    gh repo create <repository_name>
+    gh repo create <repository_name> --public --source=. --remote=origin
     ```
+   
+This command will create a new public repository with the specified name and set the current directory as the source. It will also add a remote named origin to the repository.
+
+you can use the --public or --private flags to set the repository's visibility
+the --source option points to the current directory
+the --remote option automatically sets the origin remote
+
 
 2. Configure Repository Settings
 
