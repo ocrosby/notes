@@ -42,13 +42,24 @@ uv self update
 
 ## Usage
 
-Initializing a new project
+### Initializing a new project
+
+```shell
+uv init example
+```
+
+This will create a new directory named example in the current directory.
+
+You will need to change in that directory for remaining commands.
+
+### Adding the requests package to the current workspace
+
+```shell
+uv add requests
+```
+
 
 ```Shell
-uv init example
-
-cd example
-
 # Add packages
 uv add requests
 
