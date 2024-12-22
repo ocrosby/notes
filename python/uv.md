@@ -64,26 +64,43 @@ uv add requests
 uv pip list
 ```
 
-```Shell
+## Install tools like ruff and invoke
 
-# Check the project
-uv run ruff check
-
-# Install a tool
+```shell
 uv tool install ruff
 uv tool install invoke
+```
 
+To verify the installation of ruff
+
+```shell
 ruff --version
+```
 
+### Checking the project using ruff
+
+```shell
+uv run ruff check
+```
+
+### Installing multiple versions of python
+
+```shell
 uv python install 3.10 3.11 3.12
+```
 
+### Creating a virtual environment
+
+```shell
 uv venv --python 3.12.0
+```
 
-# Running a script
+### Running a script
+
+```shell
 uv run hello.py
 ```
 
-Note: This will create a new project directory.
 
 ## References
 
