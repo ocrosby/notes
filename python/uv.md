@@ -83,6 +83,24 @@ ruff --version
 uv run ruff check
 ```
 
+### Installing the latest Python version
+
+```shell
+uv python install
+```
+
+This will install a uv-managed Python version even if there is already a 
+Python installation on your system. If you've previously installed Python
+with uv, a new version will not be installed.
+
+Once Python is installed, it will be used by uv commands automatically.
+
+### Viewing Python installations
+
+```Shell
+uv python list
+```
+
 ### Installing multiple versions of python
 
 ```shell
@@ -90,6 +108,13 @@ uv python install 3.10 3.11 3.12
 ```
 
 ### Creating a virtual environment
+
+```Shell
+uv venv
+```
+
+This will create a new virtual environment and download a managed
+Python version if Python is not found.
 
 ```shell
 uv venv --python 3.12.0
