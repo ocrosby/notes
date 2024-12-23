@@ -129,4 +129,5 @@ uv run hello.py
 
 ## References
 
+- [Documentation](https://docs.astral.sh/uv/)
 - [GitHub](https://github.com/astral-sh/uv)
