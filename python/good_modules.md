@@ -25,6 +25,7 @@
 - boto3 (AWS SDK)
 - uv (async I/O)
 - NiceGUI (GUI)
+- marimo (replacement for jyupter notebook)
 
 ## References
 
@@ -41,3 +42,4 @@
 - [questionary](http://questionary.readthedocs.io/)
 - [litestar](https://litestar.readthedocs.io/)
 - [Arjan](https://www.youtube.com/watch?v=OiLgG4CabPo)
+- [Marimo Video](https://www.youtube.com/watch?v=XoArtLKPJ2I)
