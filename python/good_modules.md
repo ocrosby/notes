@@ -26,6 +26,8 @@
 - uv (async I/O)
 - NiceGUI (GUI)
 - marimo (replacement for jyupter notebook)
+- vega-altair (data visualization)
+- polars (data manipulation)
 
 ## References
 
@@ -43,3 +45,5 @@
 - [litestar](https://litestar.readthedocs.io/)
 - [Arjan](https://www.youtube.com/watch?v=OiLgG4CabPo)
 - [Marimo Video](https://www.youtube.com/watch?v=XoArtLKPJ2I)
+- [Vega-Altair](https://altair-viz.github.io/)
+- [Polars](https://pola.rs/)
