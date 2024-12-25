@@ -121,3 +121,4 @@ hugo
 - [Hugo](https://gohugo.io)
 - [Hugo Themes](https://themes.gohugo.io)
 - [Quick Start](https://gohugo.io/getting-started/quick-start/)
+- [Easy Guide](https://www.ii.com/easy-way-play-with-hugo-theme-examplesite/)
