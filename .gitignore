@@ -2,3 +2,17 @@
 .idea/
 node_modules
 .DS_Store
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Jupyter Notebook configuration
+.jupyter/
+
+# Python bytecode files
+__pycache__/
+*.py[cod]
+
+# Virtual environment directories
+venv/
+env/

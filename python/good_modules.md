@@ -1,5 +1,10 @@
 # Good Modules
 
+- httpx (use this instead of requests)
+- pandas (data manipulation analysis)
+- numpy (numerical operations or large datasets - written in C)
+- scikit-learn (machine learning algorithms)
+- matplotlib (plotting graphs and charts)
 - tqdm (progress bar)
 - enlighten (progress bar)
 - alive_progress (progress bar)

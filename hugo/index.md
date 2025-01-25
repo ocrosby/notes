@@ -116,9 +116,16 @@ When you are ready to publish your site, build the site with the following comma
 hugo
 ```
 
+## Themes
+
+- [Lightspeed](https://www.builtatlightspeed.com/category/hugo)
+- [GetHugoThemes](https://www.gethugothemes.com)
+- [Jamstack Themes](https://jamstack.club/#ssg=hugo)
+- [PFHT](https://pfht.netlify.app/)
+- [Hugo Themes](https://themes.gohugo.io/)
+
 ## References
 
 - [Hugo](https://gohugo.io)
-- [Hugo Themes](https://themes.gohugo.io)
 - [Quick Start](https://gohugo.io/getting-started/quick-start/)
 - [Easy Guide](https://www.ii.com/easy-way-play-with-hugo-theme-examplesite/)
