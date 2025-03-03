@@ -52,3 +52,4 @@ marimo run python/notebooks/marimo.md
 
 - [Python - Official Site](https://www.python.org/)
 - [Marimo - Official Site](https://marimo.io/)
+- [Explore Marimo](https://medium.com/featurepreneur/bored-of-jupyter-notebook-lets-explore-marimo-63a5bc1c98ed)
