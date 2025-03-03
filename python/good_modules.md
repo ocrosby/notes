@@ -25,6 +25,7 @@
 - platformdirs (platform-specific directories)
 - locust (load testing)
 - custom_tkinter (GUI)
+- PyQt5 (GUI)
 - mss (screen capture)
 - decouple (configuration)
 - boto3 (AWS SDK)

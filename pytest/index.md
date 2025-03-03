@@ -7,7 +7,7 @@ compatible with `unittest` fixtures.
 ## Installation
 
 ```Shell
-pip install pytest
+pip install pytest pytest-cov pytest-mock
 ```
 
 ## Usage
