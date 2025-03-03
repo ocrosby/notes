@@ -12,5 +12,6 @@ pydantic
 python-dotenv
 requests
 scikit-learn
+seaborn
 shapely
 sqlmodel
