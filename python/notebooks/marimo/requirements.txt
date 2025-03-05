@@ -12,3 +12,4 @@ requests
 scikit-learn
 sqlmodel
 types-psycopg2
+types-PyYAML
