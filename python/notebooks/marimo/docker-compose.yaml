@@ -9,6 +9,16 @@ services:
     image: marimo-notebook-docker
     ports:
     - 8080:8080
+  marimo-notebook-marimo:
+    build:
+      args:
+        NOTEBOOK_NAME: marimo
+      context: .
+      dockerfile: Dockerfile
+    container_name: marimo-container-marimo
+    image: marimo-notebook-marimo
+    ports:
+    - 8081:8080
   marimo-notebook-postgres:
     build:
       args:
@@ -18,4 +28,4 @@ services:
     container_name: marimo-container-postgres
     image: marimo-notebook-postgres
     ports:
-    - 8081:8080
+    - 8082:8080
