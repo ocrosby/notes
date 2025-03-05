@@ -1,0 +1,26 @@
+# Ignore Python cache files
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore virtual environments
+.venv/
+venv/
+
+# Ignore version control directories
+.git/
+.gitignore
+
+# Ignore other unnecessary files
+.DS_Store
+*.log
+
+# Ignore specific files
+.pylintrc
+.dockerignore
+docker-compose.yaml
+Dockerfile
+mypy.ini
+tasks.py
+.idea/
+.vscode/

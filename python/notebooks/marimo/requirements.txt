@@ -3,14 +3,12 @@ click
 decouple
 marimo
 matplotlib
-mss
 numpy
 pandas
-geopandas
 psycopg2-binary
 pydantic
 python-dotenv
 requests
 scikit-learn
-shapely
 sqlmodel
+types-psycopg2

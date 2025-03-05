@@ -2,6 +2,49 @@
 
 This document contains my personal notes on Marimo Notebooks.
 
+## Docker
+
+Since I've added a new Dockerfile and a docker-compose.yaml file, I can now run the Marimo Notebooks in separate Docker containers.
+
+Each time you create a new notebook, it will be saved in the `notebooks` directory.
+
+In order to make it available via `docker-compose up`, you need to add the following line to the `docker-compose.yaml` file:
+
+```yaml
+  docker_app:
+    image: marimo-notebook-<notebook-name>
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NOTEBOOK_NAME: <notebook-name>
+    container_name: marimo-container-<notebook-name>
+    ports:
+      - "<notebook_port>:8080"
+```
+
+Where the notebook_ports must be unique for each notebook, and the `notebook-name` must be the name of the notebook file without the `.md` extension.
+
+If the code in your notebook requires a custom environment you will need to specify an environment file for your service
+
+```yaml
+  docker_app:
+    image: marimo-notebook-<notebook-name>
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NOTEBOOK_NAME: <notebook-name>
+    container_name: marimo-container-<notebook-name>
+    ports:
+      - "<notebook_port>:8080"
+    env_file:
+      - <env-file>
+```
+
+There could be a single `.env` file for all the notebooks, or a separate `.env` file for each notebook.
+It merely needs to be specified in the `docker-compose.yaml` file, and depends on the requirements of the notebook in question.
+
 ## Setup
 
 ### Install
@@ -81,8 +124,9 @@ marimo view python/notebooks/marimo.md
 ```
 
 
+
 ## References
 
 - [GitHub](https://github.com/marimo-team/marimo)
 - [Documentation](https://docs.marimo.io/)
-- 
+- [GitHub Notebooks On-The-Fly](https://marimo.io/blog/github-notebooks-on-the-fly)

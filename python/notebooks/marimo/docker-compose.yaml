@@ -1,0 +1,24 @@
+services:
+  app:
+    image: marimo-notebook-postgres
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NOTEBOOK_NAME: postgres
+    container_name: marimo-container-postgres
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+
+  docker_app:
+    image: marimo-notebook-docker
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NOTEBOOK_NAME: docker
+    container_name: marimo-container-docker
+    ports:
+      - "8081:8080"
