@@ -1,2 +1,5 @@
 [MASTER]
 ignore=notebooks,.venv,venv
+
+[DESIGN]
+max-parents=8

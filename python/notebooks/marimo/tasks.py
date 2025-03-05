@@ -28,6 +28,9 @@ def lint_code(c):
     """
     Lint the source code using pylint.
     """
+    print("Genreating docker compose file ...")
+    c.run("python generate_docker_compose.py")
+
     print("Checking code style ...")
     c.run("pylint --rcfile=.pylintrc .")
 
