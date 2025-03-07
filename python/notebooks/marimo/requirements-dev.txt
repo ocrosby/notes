@@ -1,5 +1,0 @@
--r requirements.txt
-pylint
-black
-mypy
-invoke

@@ -1,8 +1,18 @@
 """
 This module contains the tasks that can be executed using the invoke command.
 """
+import os
+import shutil
 
 from invoke import task
+
+
+@task(name="clean", aliases=["c"])
+def clean(c):
+    """
+    Clean up specified patterns from the root directory.
+    """
+    c.run("rm -rf *.egg-info")
 
 
 @task(name="install", aliases=["i"])
@@ -11,7 +21,7 @@ def install_dependencies(c):
     Install the project dependencies listed in requirements.txt.
     """
     c.run("pip install --upgrade pip")
-    c.run("pip install -r requirements-dev.txt")
+    c.run('pip install -e ".[dev]"')
 
 
 @task(name="format", aliases=["f"])

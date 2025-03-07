@@ -1,7 +1,6 @@
 beautifulsoup4
 click
 decouple
-marimo
 matplotlib
 numpy
 pandas
@@ -13,3 +12,9 @@ scikit-learn
 sqlmodel
 types-psycopg2
 types-PyYAML
+
+[dev]
+pylint
+black
+mypy
+invoke

@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "marimo"
+version = "0.1.0"
+description = "My marimo project"
+authors = [
+    { name = "Omar Crosby", email = "omar.crosby@gmail.com" }
+]
+dependencies = [
+    "beautifulsoup4",
+    "click",
+    "decouple",
+    "matplotlib",
+    "numpy",
+    "pandas",
+    "psycopg2-binary",
+    "pydantic",
+    "python-dotenv",
+    "requests",
+    "scikit-learn",
+    "sqlmodel",
+    "types-psycopg2",
+    "types-PyYAML"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pylint",
+    "black",
+    "mypy",
+    "invoke"
+]

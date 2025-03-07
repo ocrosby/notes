@@ -1,13 +1,12 @@
 import marimo
 
-__generated_with = "0.11.14"
+__generated_with = "0.11.16"
 app = marimo.App(width="medium")
 
 
 @app.cell
 def _():
     import marimo as mo
-
     return (mo,)
 
 
@@ -129,9 +128,7 @@ def _(mo):
 
 @app.cell
 def _(mo):
-    mo.md(
-        r"""[PostgreSQL Python: Connect to PostgreSQL Database Server](https://neon.tech/postgresql/postgresql-python/connect)"""
-    )
+    mo.md(r"""[PostgreSQL Python: Connect to PostgreSQL Database Server](https://neon.tech/postgresql/postgresql-python/connect)""")
     return
 
 
@@ -203,7 +200,7 @@ def _(mo):
         def connect(db_config: Optional[Dict[str, Any]] = None) -> Optional[psycopg2.extensions.connection]:
             if not db_config:
                 db_config = get_db_config()
-        
+
             try:
                 # connecting to the PostgreSQL server
                 with psycopg2.connect(**db_config) as conn:
@@ -220,6 +217,12 @@ def _(mo):
         """
     )
     return
+
+
+@app.cell
+def _():
+    from marimo.connect import connect
+    return (connect,)
 
 
 if __name__ == "__main__":
