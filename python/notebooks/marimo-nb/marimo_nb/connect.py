@@ -7,7 +7,7 @@ import os
 from dotenv import load_dotenv
 import psycopg2
 from psycopg2 import DatabaseError, OperationalError
-from constants import (
+from marimo_nb.constants import (
     DEFAULT_POSTGRES_USER,
     DEFAULT_POSTGRES_PASSWORD,
     DEFAULT_POSTGRES_HOST,
@@ -19,8 +19,8 @@ from constants import (
 load_dotenv()
 
 
-def get_db_config() -> Dict[str, Any]:
-    """Get the database configuration from environment variables"""
+def get_db_config(override_db: Optional[str] = None) -> Dict[str, Any]:
+    """Get the database configuration from environment variables, with an optional override for the database name"""
     port = os.getenv("POSTGRES_PORT")
 
     db_config = {
@@ -28,7 +28,7 @@ def get_db_config() -> Dict[str, Any]:
         "password": os.getenv("POSTGRES_PASSWORD", DEFAULT_POSTGRES_PASSWORD),
         "host": os.getenv("POSTGRES_HOST", DEFAULT_POSTGRES_HOST),
         "port": int(port) if port else DEFAULT_POSTGRES_PORT,
-        "database": os.getenv("POSTGRES_DB", DEFAULT_POSTGRES_DB),
+        "database": override_db if override_db else os.getenv("POSTGRES_DB", DEFAULT_POSTGRES_DB),
     }
 
     return db_config
@@ -49,6 +49,11 @@ def connect(
     except (DatabaseError, OperationalError) as error:
         print(error)
         return None
+
+def connect_by_db_name(db_name: str) -> Optional[psycopg2.extensions.connection]:
+    """Connect to the PostgreSQL database server using the given database name"""
+    db_config = get_db_config(override_db=db_name)
+    return connect(db_config=db_config)
 
 
 if __name__ == "__main__":

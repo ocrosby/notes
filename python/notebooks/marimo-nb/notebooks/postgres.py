@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.11.16"
+__generated_with = "0.11.17"
 app = marimo.App(width="medium")
 
 
@@ -210,6 +210,9 @@ def _(mo):
                 print(error)
                 return None
 
+        def connect_by_db_name(db_name: str) -> Optional[psycopg2.extensions.connection]:
+            db_config = get_db_config(override_db=db_name)
+            return connect(db_config=db_config)
 
         if __name__ == "__main__":
             connect()
@@ -221,8 +224,107 @@ def _(mo):
 
 @app.cell
 def _():
-    from marimo.connect import connect
-    return (connect,)
+    from marimo_nb.connect import connect, connect_by_db_name, get_db_config
+    return connect, connect_by_db_name, get_db_config
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""# Listing all of the databases""")
+    return
+
+
+@app.cell
+def _(connect_by_db_name):
+    def databases(conn):
+        try:
+            cur = conn.cursor()
+            cur.execute("SELECT datname FROM pg_database WHERE datistemplate = false")
+            databases = cur.fetchall()
+            for db in databases:
+                yield db
+            cur.close()
+        except Exception as e:
+            print(f"Error: {e}")
+
+    for database in databases(connect_by_db_name("postgres")):
+        print(database)
+    return database, databases
+
+
+@app.cell
+def _(mo):
+    database_name = mo.ui.text(placeholder="enter a db name here", label="Database Name", value="postgres")
+
+    database_name
+    return (database_name,)
+
+
+@app.cell
+def _():
+    import psycopg2
+    from psycopg2 import sql
+
+    def database_exists(conn, db_name):
+        try:
+            cur = conn.cursor()
+            cur.execute(sql.SQL("SELECT 1 FROM pg_database WHERE datname = %s"), [db_name])
+            exists = cur.fetchone() is not None
+            cur.close()
+            return exists
+        except Exception as e:
+            print(f"Error: {e}")
+            return False
+    return database_exists, psycopg2, sql
+
+
+@app.cell
+def _(mo):
+    mo.md(f"""
+    ## Determine if a database exists by name
+    """)
+    return
+
+
+@app.cell
+def _(connect_by_db_name, database_exists, database_name):
+    if database_exists(connect_by_db_name("postgres"), database_name.value):
+        print(f"Database '{database_name.value}' exists.")
+    else:
+        print(f"Database '{database_name.value}' does not exist.")
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""## List tables in the database""")
+    return
+
+
+@app.cell
+def _():
+    def list_tables_in_database(conn):
+        try:
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT table_name
+                FROM information_schema.tables
+                WHERE table_schema = 'public'
+                ORDER BY table_name;
+            """)
+            tables = cur.fetchall()
+            for table in tables:
+                print(table[0])
+            cur.close()
+        except Exception as e:
+            print(f"Error: {e}")
+    return (list_tables_in_database,)
+
+
+@app.cell
+def _(connect_by_db_name, database_name, list_tables_in_database):
+    list_tables_in_database(connect_by_db_name(database_name.value))
+    return
 
 
 if __name__ == "__main__":
