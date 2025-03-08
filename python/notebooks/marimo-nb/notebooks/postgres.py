@@ -494,15 +494,128 @@ def _(mo):
             """),
         }
     )
-
     return
 
 
 @app.cell
 def _(mo):
-    mo.md(r"""
-    For any pattern, to install shared applications (tables to be used by everyone, additional functions provided by third parties, etc.), put them into separate schemas. Remember to grant appropriate privileges to allow the other users to access them. Users can then refer to these additional objects by qualifying the names with a schema name, or they can put the additional schemas into their search path, as they choose.
-    """)
+    mo.md(r"""For any pattern, to install shared applications (tables to be used by everyone, additional functions provided by third parties, etc.), put them into separate schemas. Remember to grant appropriate privileges to allow the other users to access them. Users can then refer to these additional objects by qualifying the names with a schema name, or they can put the additional schemas into their search path, as they choose.""")
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+        # Creating an Employees Table
+
+        ```sql
+        CREATE TABLE employees (
+            employee_id INT PRIMARY KEY,
+            first_name VARCHAR(50),
+            last_name VARCHAR(50),
+            email VARCHAR(100) UNIQUE,
+            hire_date DATE NOT NULL,
+            salary DECIMAL(10,2) CHECK (salary > 0)
+        );
+        ```
+
+        # Employees Table Structure
+
+        ## **Table: employees**
+        | Column Name  | Data Type       | Constraints                          | Description                           |
+        |-------------|----------------|--------------------------------------|---------------------------------------|
+        | `employee_id` | `INT`          | `PRIMARY KEY`                        | Unique identifier for each employee. |
+        | `first_name`  | `VARCHAR(50)`  | None                                 | Stores the employee's first name (max 50 chars). |
+        | `last_name`   | `VARCHAR(50)`  | None                                 | Stores the employee's last name (max 50 chars). |
+        | `email`       | `VARCHAR(100)` | `UNIQUE`                             | Ensures no duplicate emails exist. |
+        | `hire_date`   | `DATE`         | `NOT NULL`                           | Ensures an employee must have a hire date. |
+        | `salary`      | `DECIMAL(10,2)`| `CHECK (salary > 0)`                 | Ensures salary is a positive value. |
+
+        ---
+
+        ## **Constraints Used**
+        - **`PRIMARY KEY (employee_id)`** → Ensures that each employee has a unique identifier.
+        - **`UNIQUE (email)`** → Prevents duplicate email addresses.
+        - **`NOT NULL (hire_date)`** → Ensures that hire dates are always provided.
+        - **`CHECK (salary > 0)`** → Ensures that salary values are always positive.
+
+        ---
+
+
+        # Employees Table Structure (Enhanced)
+
+        ## **Table: employees**
+        | Column Name   | Data Type       | Constraints                          | Description                           |
+        |--------------|----------------|--------------------------------------|---------------------------------------|
+        | `employee_id` | `INT`          | `PRIMARY KEY`, `AUTO_INCREMENT`      | Unique identifier for each employee. |
+        | `first_name`  | `VARCHAR(50)`  | `NOT NULL`                           | Stores the employee's first name (max 50 chars). |
+        | `last_name`   | `VARCHAR(50)`  | `NOT NULL`                           | Stores the employee's last name (max 50 chars). |
+        | `email`       | `VARCHAR(100)` | `UNIQUE NOT NULL`                    | Ensures no duplicate emails exist and cannot be NULL. |
+        | `hire_date`   | `DATE`         | `NOT NULL`                           | Ensures an employee must have a hire date. |
+        | `salary`      | `DECIMAL(10,2)`| `CHECK (salary > 0) NOT NULL`        | Ensures salary is a positive value and not NULL. |
+        | `department_id` | `INT`        | `FOREIGN KEY REFERENCES departments(department_id) ON DELETE SET NULL` | Associates employee with a department. |
+
+        ---
+
+        ## **New Table: departments**
+        | Column Name      | Data Type       | Constraints                   | Description                          |
+        |-----------------|----------------|--------------------------------|--------------------------------------|
+        | `department_id` | `INT`           | `PRIMARY KEY`, `AUTO_INCREMENT` | Unique department identifier. |
+        | `department_name` | `VARCHAR(100)` | `UNIQUE NOT NULL`              | Stores unique department names. |
+
+        ---
+
+        ## **Constraints & Indexes Added**
+        - **`PRIMARY KEY (employee_id)`** → Ensures that each employee has a unique identifier.
+        - **`AUTO_INCREMENT` (on `employee_id`, `department_id`)** → Automatically generates unique IDs.
+        - **`UNIQUE (email)`** → Prevents duplicate email addresses.
+        - **`NOT NULL` (on critical columns)** → Ensures values are mandatory.
+        - **`CHECK (salary > 0)`** → Ensures salary values are always positive.
+        - **`FOREIGN KEY (department_id) REFERENCES departments(department_id) ON DELETE SET NULL`** → Maintains referential integrity.
+        - **`INDEX (email)`** → Optimizes search performance on email lookups.
+        - **`INDEX (department_id)`** → Optimizes queries filtering by department.
+
+        ---
+
+        ## **Why is this Better?**
+        ✅ **Maintains data integrity** (foreign key prevents orphaned records).  
+        ✅ **Prevents duplication and errors** (unique constraints and not-null checks).  
+        ✅ **Improves query performance** (indexed email and department_id for faster lookups).  
+
+        ---
+
+        ```sql
+        -- Create the departments table first because employees reference it
+        CREATE TABLE departments (
+            department_id INT PRIMARY KEY AUTO_INCREMENT,
+            department_name VARCHAR(100) UNIQUE NOT NULL
+        );
+
+        -- Create the employees table with constraints and indexes
+        CREATE TABLE employees (
+            employee_id INT PRIMARY KEY AUTO_INCREMENT,
+            first_name VARCHAR(50) NOT NULL,
+            last_name VARCHAR(50) NOT NULL,
+            email VARCHAR(100) UNIQUE NOT NULL,
+            hire_date DATE NOT NULL,
+            salary DECIMAL(10,2) CHECK (salary > 0) NOT NULL,
+            department_id INT,
+    
+            -- Foreign key constraint linking employees to departments
+            CONSTRAINT fk_department FOREIGN KEY (department_id) 
+                REFERENCES departments(department_id) 
+                ON DELETE SET NULL
+        );
+
+        -- Create an index on email for faster lookups
+        CREATE INDEX idx_email ON employees(email);
+
+        -- Create an index on department_id for optimized queries
+        CREATE INDEX idx_department ON employees(department_id);
+        ```
+        """
+    )
     return
 
 
