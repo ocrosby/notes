@@ -1,10 +1,12 @@
 # Horizontal Motions
 
-Horizontal motions move along the current line. They range from single-character steps to precise character searches.
+Your first instinct when editing in Vim will be to use the arrow keys — and that works. But arrow keys keep your hands away from the home row, and in Vim, leaving the home row has a cost. This page walks you through progressively better ways to move along a single line, from basic character steps all the way to surgical single-character jumps anywhere on the line.
 
 ---
 
-## Basic
+## Basic Movement
+
+The four foundational horizontal keys are `h` and `l` for left and right, and `0`/`$` to jump to the edges of the line. These keep your right hand on the home row.
 
 | Motion | Description |
 |--------|-------------|
@@ -15,11 +17,17 @@ Horizontal motions move along the current line. They range from single-character
 | `$`    | Move to the end of the line |
 | `g_`   | Move to the last non-blank character of the line |
 
+The difference between `0` and `^` matters when lines are indented. `0` always goes to column 1 — the very start of the line including any leading whitespace. `^` skips past that whitespace and puts you at the first actual character. In code, `^` is almost always what you want.
+
+Similarly, `$` goes to the end of the line including any trailing whitespace, while `g_` stops at the last non-blank character.
+
+> **Tip:** You'll use `^` and `$` constantly — they're essential for operators. `d^` deletes from the cursor back to the first non-blank; `d$` (or just `D`) deletes to the end of the line.
+
 ---
 
-## Screen Line (Wrapped Text)
+## Screen Line Motions (When Lines Wrap)
 
-When `wrap` is enabled, long lines span multiple screen lines. These navigate by screen line rather than logical line:
+When `wrap` is enabled, a single long logical line can span several visible lines on screen. The basic motions (`0`, `^`, `$`) treat the whole thing as one line — pressing `$` jumps to the far end of the wrapped line, which may be off-screen. The `g`-prefixed variants stay within the visible portion.
 
 | Motion | Description |
 |--------|-------------|
@@ -29,11 +37,24 @@ When `wrap` is enabled, long lines span multiple screen lines. These navigate by
 | `g$`   | Move to the last character of the screen line |
 | `\|`   | Move to column [count] on the current line |
 
+> **Pattern — `g` prefix:** The `g` variants are the display-aware versions of their base motions. Same letter, but `g` means "act on what I can *see* on this screen line, not the whole logical line."
+
 ---
 
 ## Word by Word
 
-A **word** is a sequence of letters, digits, or underscores — or a sequence of other non-blank characters. A **WORD** is any sequence of non-blank characters separated by whitespace. WORDs are broader and particularly useful in code.
+Once you're comfortable with `h` and `l`, the next step is jumping whole words at a time. This is where movement starts to feel fast.
+
+Vim has two kinds of words:
+- A **word** (`w`) is a sequence of letters, digits, or underscores — basically an identifier. Punctuation like `.`, `(`, and `{` are their own separate words.
+- A **WORD** (`W`) is anything separated by whitespace. `foo.bar(baz)` is one WORD but five words.
+
+```
+wwww ==> v   v v   v   v
+         word. are two words
+         word. is one WORD
+WWW  ==> ^     ^  ^   ^
+```
 
 | Motion | Description |
 |--------|-------------|
@@ -46,48 +67,53 @@ A **word** is a sequence of letters, digits, or underscores — or a sequence of
 | `E`    | Jump to the end of the current/next WORD |
 | `gE`   | Jump to the end of the previous WORD |
 
-> Word motions allow for more precise changes; WORD motions allow for faster movement.
+> **Pattern — lowercase vs UPPERCASE:** Lowercase motions (`w`, `b`, `e`, `ge`) operate on *words* — respecting punctuation as boundaries. Uppercase (`W`, `B`, `E`, `gE`) operate on *WORDs* — only whitespace is a boundary. Use lowercase for precision when editing code; use uppercase for speed when you want to hop over entire expressions like `foo.bar()` in one jump.
 
-```
-wwww ==> v   v v   v   v
-         word. are two words
-         word. is one WORD
-WWW  ==> ^     ^  ^   ^
-```
+> **Pattern — forward vs backward:** `w` and `e` move *forward*; `b` and `ge` move *backward*. The uppercase versions follow the same rule. When you need to go back, reach for `b` (beginning of previous word) or `ge` (end of previous word).
 
 ---
 
-## Find Character
+## Finding a Character
 
-Jump directly to any character on the current line. This is the most precise horizontal motion.
+Word motions are great for structured code, but sometimes you just want to jump directly to a specific character on the line. The `f` and `t` motions do exactly that — and once you learn `;` to repeat them, they become one of the most efficient tools in Vim.
 
 | Motion    | Description |
 |-----------|-------------|
 | `f{char}` | Move to the next occurrence of `{char}` on the line |
 | `F{char}` | Move to the previous occurrence of `{char}` on the line |
-| `t{char}` | Move just before the next occurrence of `{char}` (until) |
-| `T{char}` | Move just after the previous occurrence of `{char}` |
+| `t{char}` | Move just *before* the next occurrence of `{char}` |
+| `T{char}` | Move just *after* the previous occurrence of `{char}` |
 | `;`       | Repeat the last `f`/`F`/`t`/`T` forward |
 | `,`       | Repeat the last `f`/`F`/`t`/`T` backward |
+
+Here's the difference between `f` and `t` on the same line:
 
 ```
 f(   ==> v                        v
          const fireball = function(target){
-wwww ==> ^     ^        ^ ^       ^
-
 t(   ==> v                       v
          const fireball = function(target){
-f(   ==> ^                        ^
 ```
 
-> `t` is especially useful with operators — `dt(` deletes everything up to (but not including) the next `(`.
+`f(` lands *on* the `(`. `t(` lands on the character *before* it. This distinction matters when combining with operators:
 
-Use `;` and `,` to walk between matches instead of retyping the search:
+- `df(` — delete everything from the cursor up to and *including* the `(`
+- `dt(` — delete everything up to but *not including* the `(` — leaving the `(` intact
+
+For operators, `t` is usually what you want because it leaves the delimiter in place.
+
+> **Pattern — lowercase vs UPPERCASE:** `f` and `t` search *forward*; `F` and `T` search *backward*. Capitalising the letter reverses the direction — a rule that applies to many motions in Vim.
+
+> **Pattern — `f` vs `t`:** `f` = lands *on* the character (think: **f**ind it). `t` = lands just *before* it (think: up *t*ill the character, but not including it).
+
+Don't retype the search to get to the next match. Use `;` to jump forward to the next occurrence and `,` to jump back:
 
 ```
 fd;;   ==> v   v               v        v
            let damage = weapon.damage * d20();
 ```
+
+Type `fd` once, then press `;` to walk through every `d` on the line. This is much faster than retyping `fd` each time.
 
 ---
 

@@ -1,30 +1,34 @@
 # VIM Motions
 
-Motions are commands that move the cursor with speed and precision. They are composed of one or more keys typed as **melodies** — pressed one after the other in rapid succession, not simultaneously.
+If you've ever watched an experienced Vim user edit code, it looks like magic. Their cursor teleports across the file. They rename a variable inside quotes without selecting anything. They jump between functions with a single keystroke. None of it is magic — it's motions.
 
-Motions can be used standalone to navigate, or combined with **operators** (`d`, `c`, `y`, `>`, etc.) to act on text. The same motion that moves you to the end of a word also defines what `dw` deletes.
+**Motions are how you move in Vim.** Every navigation command you type is a motion: moving one character, jumping to the end of a word, searching for a pattern, leaping to a matching bracket. Motions are the vocabulary of movement.
 
----
-
-## Sections
-
-| Topic | What it covers |
-|-------|----------------|
-| [Horizontal Motions](horizontal.md) | `h`/`l`, line start/end, word-by-word, find-character |
-| [Vertical Motions](vertical.md) | `j`/`k`, sentences, paragraphs, search patterns, sections |
-| [File, Window & Semantic Navigation](navigation.md) | `gg`/`G`, `%`, `H`/`M`/`L`, `gd`, `gf` |
-| [Text Object Selection](text-objects.md) | `aw`, `iw`, `ab`, `ib`, `a"`, `i"`, tags, and more |
-| [Marks](marks.md) | Setting, jumping to, and traversing marks |
-| [Jump Navigation](jumps.md) | Jumplist (`Ctrl-o`/`Ctrl-i`) and changelist (`g;`/`g,`) |
-| [Bracket & Code Structure](brackets.md) | Unmatched brackets, methods, preprocessor, C comments |
-| [Modifiers](modifiers.md) | Count multipliers and motion type forcing |
+What makes them powerful is that they compose. A motion on its own moves the cursor. A motion paired with an operator *does something* to the text it covers. `d` (delete) + `w` (word) = `dw` (delete word). `c` (change) + `i"` (inside quotes) = `ci"` (change what's inside quotes). Once you learn the motions, every operator you learn multiplies your editing power.
 
 ---
 
-## Summary
+## How to Read These Docs
 
-| Type | Motions | Reference |
-|------|---------|-----------|
+Each page covers one concept area. If you're just starting out, read them in order — each one builds on the last. If you're looking something up, use the summary table at the bottom to find what you need.
+
+| Page | What you'll learn |
+|------|-------------------|
+| [Horizontal Motions](horizontal.md) | Moving along a line — from single characters to precise jumps |
+| [Vertical Motions](vertical.md) | Moving between lines — from steps to search-powered teleportation |
+| [File, Window & Semantic Navigation](navigation.md) | Jumping across an entire file or following code references |
+| [Text Object Selection](text-objects.md) | Selecting structured regions like words, blocks, and quoted strings |
+| [Marks](marks.md) | Saving positions and jumping back to them |
+| [Jump Navigation](jumps.md) | Retracing your steps through Vim's movement history |
+| [Bracket & Code Structure](brackets.md) | Navigating nested code — scopes, methods, and conditionals |
+| [Modifiers](modifiers.md) | Making any motion more powerful with counts and type overrides |
+
+---
+
+## Quick Reference
+
+| Type | Motions | Page |
+|------|---------|------|
 | Character | `h`, `l` | [horizontal](horizontal.md) |
 | Line start/end | `0`, `^`, `$`, `g_` | [horizontal](horizontal.md) |
 | Screen line | `g0`, `g^`, `gm`, `g$` | [horizontal](horizontal.md) |
@@ -50,4 +54,4 @@ Motions can be used standalone to navigate, or combined with **operators** (`d`,
 
 ---
 
-**Repeaters** (`n`, `N`, `;`, `,`, `Ctrl-o`, `Ctrl-i`) let you keep moving by pressing a single key — train yourself to rely on them instead of retyping searches.
+**One tip before you start:** resist the urge to learn everything at once. Pick two or three motions per session and use them until they're automatic. Speed comes from muscle memory, not memorisation.

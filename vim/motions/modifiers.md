@@ -1,35 +1,52 @@
 # Motion Modifiers
 
-These aren't motions themselves — they change how a motion behaves when combined with an operator or count.
+Motions are already powerful on their own, but two modifiers can make any motion even more flexible: **counts** let you repeat a motion any number of times in one keystroke, and **motion type forcing** lets you override how Vim interprets what a motion selects. Neither is essential for beginners, but once you're comfortable with basic motions these will start to feel natural.
 
 ---
 
-## Counts (Multipliers)
+## Counts — Repeat Any Motion N Times
 
-Prefix any motion with a number to repeat it that many times:
+Prefix any motion with a number and Vim repeats it that many times:
 
 ```
 {count}{motion}
 ```
 
-| Example   | Description |
-|-----------|-------------|
-| `2w`      | Move 2 words forward |
-| `5j`      | Move 5 lines down |
-| `3;`      | Go to the 3rd next occurrence of the last searched character |
-| `2/baby`  | Jump to the 2nd occurrence of `baby` |
-| `10k`     | Move 10 lines up |
+| Example   | What it does |
+|-----------|--------------|
+| `2w`      | Move forward 2 words |
+| `5j`      | Move down 5 lines |
+| `3;`      | Jump to the 3rd next occurrence of the last searched character |
+| `2/hello` | Jump to the 2nd occurrence of `hello` in the file |
+| `10k`     | Move up 10 lines |
 
-> Counts work with operators too — `2dw` deletes 2 words, `3dd` deletes 3 lines.
-> When both the operator and motion have counts they multiply: `2d3w` deletes 6 words.
+Counts work with operators too:
 
-**Practical tip:** Our brains are slow at counting. For vertical jumps, enable relative line numbers so you can instantly read the jump distance to any visible line rather than counting yourself.
+| Example | What it does |
+|---------|--------------|
+| `2dw`   | Delete 2 words |
+| `3dd`   | Delete 3 lines |
+| `4>>` | Indent 4 lines |
+
+And when both the operator and the motion have a count, they multiply:
+
+```
+2d3w   →   deletes 6 words  (2 × 3)
+```
+
+**A practical tip about counting:** our brains are slow at counting lines in a file. For vertical jumps, enable relative line numbers — in Neovim, set `vim.wo.relativenumber = true`. With relative numbers, every line shows its distance from the cursor rather than its absolute number, so you can instantly read the count you need to type. `7k` to jump up 7 lines becomes obvious when you can see the `7` right there.
+
+For large jumps, search (with `/`) is often faster than counting anyway — use counts for short, predictable distances.
 
 ---
 
-## Motion Type Forcing
+## Motion Type Forcing — Override What Gets Selected
 
-After typing an operator but before the motion, you can override how Vim classifies the motion. This matters because motions are either *characterwise* or *linewise* by default, and that affects exactly what gets selected.
+This one is more advanced, but understanding it prevents subtle bugs when writing complex commands.
+
+Every motion in Vim has a default "type" — it either selects characters between two points (characterwise), whole lines (linewise), or a rectangular block (blockwise). This type determines exactly what an operator acts on. Sometimes the default type isn't what you want, and you can override it.
+
+After typing an operator but *before* the motion, insert one of these:
 
 | Key      | Forces the motion to be... |
 |----------|----------------------------|
@@ -37,17 +54,36 @@ After typing an operator but before the motion, you can override how Vim classif
 | `V`      | Linewise |
 | `Ctrl-v` | Blockwise |
 
-```vim
-" dj is linewise — deletes the current line AND the next line entirely
-" dvj forces characterwise — deletes from cursor to same column on next line
+Here's when this matters in practice:
 
-" d$ deletes to end of line (inclusive)
-" dv$ same result usually, but the distinction matters in edge cases
-"   like operating on a single-character line
+```vim
+" dj is linewise — deletes the current line AND the next entire line
+dj
+
+" dvj forces characterwise — deletes from cursor to the same column
+" on the next line, rather than deleting whole lines
+dvj
 ```
 
-> Most useful when a motion's default type doesn't match your intent.
-> Example: `gUv}` uppercases a paragraph characterwise (stopping at the last character) rather than linewise (which would include the trailing blank line).
+```vim
+" d$ deletes to end of line (inclusive by default)
+" On a single-character line, this may behave unexpectedly
+" dv$ forces it to be characterwise exclusive — a subtle but real difference
+dv$
+```
+
+A more practical example:
+
+```vim
+" gU} uppercases to the next blank line — but it's linewise,
+" so it includes the blank line itself
+gU}
+
+" gUv} forces characterwise — stops before the blank line
+gUv}
+```
+
+You probably won't need this often as a beginner, but when you find a motion doing something slightly unexpected — taking one character too many or one line too many — this is the tool to reach for.
 
 ---
 
