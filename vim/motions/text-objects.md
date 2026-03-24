@@ -70,6 +70,13 @@ This is where text objects shine most in code. You can operate on the contents o
 
 Imagine your cursor is somewhere inside a function call like `calculate(price * quantity, taxRate)`. Press `ci(` and Vim deletes everything between the parentheses and drops you into insert mode — ready to rewrite the arguments. The parentheses themselves are left untouched.
 
+> **Python tip:** In Python, `{}` is used for dict and set literals — not for code blocks. `iB`/`aB` will target dict/set contents, not the body of a function or `if` statement. The most common bracket text objects in Python code are:
+> - `i(` / `a(` — function call arguments, tuples, generator expressions
+> - `i[` / `a[` — list contents, subscript expressions, list comprehensions
+> - `i{` / `a{` — dict and set contents
+>
+> `ci(` to rewrite a function's arguments and `di[` to clear a list literal come up constantly in Python. For navigating *code blocks*, Python uses indentation — Treesitter-based text objects (`:h nvim-treesitter-textobjects`) provide `if`/`class`/`function` scope selection in Neovim.
+
 ---
 
 ## Tags

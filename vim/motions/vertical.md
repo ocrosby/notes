@@ -87,6 +87,8 @@ In languages that use `{` and `}` to define blocks — C, Go, JavaScript, Java �
 
 These are most reliable in C-style languages. In Python or Ruby, `{`/`}` paragraph jumps tend to work better for navigating between definitions.
 
+> **Python tip:** Python doesn't place `{` at column 1 — it uses indentation for blocks and blank lines to separate definitions. As a result, `[[`/`]]` won't reliably jump between Python functions or classes. Use `{` and `}` (paragraph jumps) instead. They work naturally with Python's blank-line-separated `def` and `class` blocks: `}` hops to the next definition, `{` goes back to the previous one.
+
 ---
 
 ← [Back to index](README.md)

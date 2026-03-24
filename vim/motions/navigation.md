@@ -60,6 +60,10 @@ These motions aren't just about positions — they understand the *meaning* of w
 
 `gf` is surprisingly useful. If your cursor is on a file path — say, an import statement like `require('./utils/helpers')` or a Python `from models import user` — pressing `gf` opens that file directly. You never have to manually navigate to it.
 
+> **Python tip:** `gf` works on Python import paths when the file is reachable on Vim's `path`. Place your cursor on the module portion of `from utils.helpers import format_date` and `gf` attempts to open `utils/helpers.py`.
+>
+> `gd` in plain Vim searches the current file for the first occurrence of the word under the cursor — useful but limited. In Neovim with an LSP server configured (`pyright`, `pylsp`, or `basedpyright`), `gd` becomes a true semantic jump: it follows the symbol to its actual definition, through `__init__.py` re-exports, across files, and into installed packages. If you're editing Python seriously, setting up an LSP server turns `gd` into one of your most-used motions.
+
 ---
 
 ← [Back to index](README.md)

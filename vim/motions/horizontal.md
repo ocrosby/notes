@@ -115,6 +115,14 @@ fd;;   ==> v   v               v        v
 
 Type `fd` once, then press `;` to walk through every `d` on the line. This is much faster than retyping `fd` each time.
 
+> **Python tip:** A few characters come up constantly as `f`/`t` targets in Python code:
+> - `f:` — jump to the `:` at the end of a `def`, `if`, `for`, `while`, or `class` statement
+> - `f=` — jump to an assignment or keyword argument
+> - `f,` — hop to the next argument separator in a function call
+> - `t,` combined with `d` or `c` — delete or replace an argument without touching its trailing comma
+>
+> For example, on a line like `result = calculate(base, rate, discount)`, pressing `f,` moves you to each comma in turn, and `dt,` deletes the current argument up to (but not including) the comma.
+
 ---
 
 ← [Back to index](README.md)

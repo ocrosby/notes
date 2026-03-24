@@ -44,6 +44,8 @@ These are particularly useful in object-oriented code where you're moving betwee
 
 Use `]]` and `[[` (from [vertical motions](vertical.md)) if you're in a C-style language with top-level braces. Use `]m` and `[m` when you're in a class and the methods are indented — these look for method-start patterns rather than column-1 braces.
 
+> **Python tip:** `]m` and `[m` work well inside Python class definitions. They jump between `def` method bodies by looking for method-start patterns, not column-1 braces — so they match Python's indented `def` statements correctly. Inside a class, `]m` takes you to the start of the next method and `[m` takes you to the previous one.
+
 ---
 
 ## Preprocessor Conditionals
@@ -57,6 +59,8 @@ If you work in C or C++, you'll often encounter blocks of code wrapped in `#if`/
 
 With your cursor inside a conditional block, `[#` takes you to the `#if` or `#else` that opened it. `]#` takes you forward to the next boundary.
 
+> **Python tip:** Python has no preprocessor, so `[#` and `]#` don't apply. If you're using Neovim with Treesitter, plugins like `nvim-treesitter-textobjects` provide structure-aware navigation for Python — jumping between `if`/`elif`/`else` branches or `try`/`except`/`finally` blocks.
+
 ---
 
 ## C Comment Boundaries
@@ -67,6 +71,8 @@ When working with multi-line `/* ... */` comments in C-style languages, these mo
 |--------------|-------------|
 | `[*` or `[/` | Jump to the start of the current or previous `/* ... */` comment |
 | `]*` or `]/` | Jump to the end of the current or next `/* ... */` comment |
+
+> **Python tip:** Python doesn't use `/* ... */` comments, so these motions don't apply. For Python docstrings — triple-quoted strings like `"""..."""` or `'''...'''` — use quoted string text objects instead: `ci"` targets the contents of a docstring, and `da"` deletes the whole thing including the quotes. For a multi-line docstring that acts as a paragraph, `dip` (delete inner paragraph) is another clean option.
 
 ---
 
