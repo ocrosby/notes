@@ -135,7 +135,7 @@ The term "channel" is the abstract concept. In practice you will see *topic*, *q
 
 ## The three EDA patterns
 
-EDA is not a single technique. It is an umbrella over three distinct patterns that solve different problems. A single system commonly uses more than one.
+EDA is not a single technique. It is an umbrella over three distinct patterns that solve different problems. A single system commonly uses more than one. See [`patterns.md`](./patterns.md) for the deep dive; the summaries below are the shortest useful version.
 
 ### Event notification
 
@@ -274,6 +274,7 @@ The paradigm is a lever, not a virtue. Apply it where the trade is worth it; kee
 
 ## Related notes
 
+- [`patterns.md`](./patterns.md) — deep dive on notification, event-carried state transfer, and event sourcing, with flow diagrams and failure modes
 - [`_index.md`](./_index.md) — the Hugo landing page for this section, with worked examples in Go and mermaid diagrams
 - [`kafka/`](./kafka/) — notes on Apache Kafka as an event streaming implementation
 - [`../messaging/`](../messaging/) — sibling notes on messaging concepts more broadly
